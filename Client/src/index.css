@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+*{
+  font-size: medium;
+}
+body {
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+link{
+  text-decoration: none !important;
+}
+Link{
+  text-decoration: none !important;
+}
+a{
+  text-decoration: none !important;
+}
+small{
+  font-size: 12px !important;
+}

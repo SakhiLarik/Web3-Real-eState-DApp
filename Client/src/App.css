@@ -1,0 +1,13 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,100..900;1,100..900&display=swap');
+@font-face {
+ font-family: "Noto Serif", serif;
+ font-size: large;
+ src: url('/public/fonts/Noto/NotoSerif-VariableFont.ttf') format('ttf');
+}
+*{
+    transition:all 0.3s ease-in-out;
+    scroll-behavior: smooth;
+}
+.lh-xss{
+    line-height: 10px !important;
+}
