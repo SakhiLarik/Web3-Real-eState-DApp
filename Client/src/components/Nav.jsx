@@ -8,26 +8,31 @@ function Nav() {
         <div>
           <a
             href="/"
-            className="px-6 text-white py-2.5 rounded hover:bg-blue-500 mx-2"
+            className="px-6 text-white py-2.5 rounded hover:bg-blue-500 "
           >
             Home
           </a>
           <a
             href="/properties"
-            className="px-6 text-white py-2.5 rounded hover:bg-blue-500 mx-2"
+            className="px-6 text-white py-2.5 rounded hover:bg-blue-500 "
           >
             Properties
           </a>
           <a
             href="dashboard.html"
-            className="px-6 text-white py-2.5 rounded hover:bg-blue-500 mx-2"
+            className="px-6 text-white py-2.5 rounded hover:bg-blue-500 "
           >
             Sellers
           </a>
-          <button className="bg-blue-500 px-6 mx-2 py-2 rounded hover:bg-blue-600">
-            {" "}
-            Login <i className="fa fas far fab fa-sign-in"></i>
-          </button>
+           <a
+            href="/register"
+            className="px-6 text-white py-2.5 rounded hover:bg-blue-500 "
+          >
+            Register
+          </a>
+          <a href="/login" className="px-6 text-white py-2.5 rounded hover:bg-blue-500 ">
+            Login 
+          </a>
         </div>
       </div>
     </nav>
