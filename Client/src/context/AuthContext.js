@@ -20,6 +20,7 @@ export const AuthProvider = ({ children }) => {
       user: {
         name: credentials.user.name,
         email: credentials.user.email,
+        phone: credentials.user.phone,
         wallet: credentials.user.walletAddress,
       },
       role: "user",
@@ -32,6 +33,7 @@ export const AuthProvider = ({ children }) => {
       JSON.stringify({
         name: credentials.user.name,
         email: credentials.user.email,
+        phone: credentials.user.phone,
         wallet: credentials.user.walletAddress,
       })
     );
