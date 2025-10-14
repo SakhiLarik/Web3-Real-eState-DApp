@@ -13,31 +13,6 @@ export const AuthProvider = ({ children }) => {
   const emptyWallet = "0x0000000000000000000000000000000000000000";
 
   const api = "http://localhost:5000/api";
-  const allowAdminLogin = (credentials) => {
-    setAuth({
-      token: "admin-token",
-      user: {
-        name: credentials.admin.name,
-        cnic: credentials.admin.cnic,
-        wallet: credentials.admin.wallet,
-      },
-      role: "admin",
-      loading: false,
-    });
-    // Save to localstorage
-    localStorage.setItem("token", "admin-token");
-    localStorage.setItem(
-      "user",
-      JSON.stringify({
-        name: credentials.admin.name,
-        cnic: credentials.admin.cnic,
-        wallet: credentials.admin.wallet,
-      })
-    );
-    localStorage.setItem("role", "admin");
-    localStorage.setItem("loading", "false");
-    return true;
-  };
 
   const allowUserLogin = (credentials) => {
     setAuth({
@@ -45,7 +20,6 @@ export const AuthProvider = ({ children }) => {
       user: {
         name: credentials.user.name,
         email: credentials.user.email,
-        cnic: credentials.user.cnic,
         wallet: credentials.user.walletAddress,
       },
       role: "user",
@@ -58,42 +32,12 @@ export const AuthProvider = ({ children }) => {
       JSON.stringify({
         name: credentials.user.name,
         email: credentials.user.email,
-        cnic: credentials.user.cnic,
         wallet: credentials.user.walletAddress,
       })
     );
     localStorage.setItem("role", "user");
     localStorage.setItem("loading", "false");
     return true;
-  };
-
-  const allowSuperAdminLogin = (credentials) => {
-    setAuth((prev) => ({
-      ...prev,
-      token: "super-admin-token",
-      user: {
-        name: credentials.admin.name || "Super Admin",
-        cnic: credentials.admin.cnic || "4530127816455",
-        wallet:
-          credentials.admin.wallet ||
-          "0xe4ae2F1944424Df1257D15fe601DF7287a6A9Ccf",
-      },
-      role: "superadmin",
-      loading: false,
-    }));
-    // Save to localstorage
-    localStorage.setItem("token", "super-admin-token");
-    localStorage.setItem(
-      "user",
-      JSON.stringify({
-        name: credentials.admin.name || "Super Admin",
-        cnic: credentials.admin.cnic || "4530127816455",
-        wallet:
-          credentials.admin.wallet || "0xe4ae2F1944424Df1257D15fe601DF7287a6A9Ccf",
-      })
-    );
-    localStorage.setItem("role", "superadmin");
-    localStorage.setItem("loading", "false");
   };
 
   const smallAddress = (address) => {
@@ -108,23 +52,7 @@ export const AuthProvider = ({ children }) => {
 
   // Check if someone is already logged in
   useEffect(() => {
-    if (localStorage.getItem("role") === "superadmin") {
-      // Check and set superadmin
-      setAuth({
-        token: "super-admin-token",
-        user: JSON.parse(localStorage.getItem("user")),
-        role: "superadmin",
-        loading: false,
-      });
-    } else if (localStorage.getItem("role") === "admin") {
-      // Check and set admin
-      setAuth({
-        token: "admin-token",
-        user: JSON.parse(localStorage.getItem("user")),
-        role: "admin",
-        loading: false,
-      });
-    } else if (localStorage.getItem("role") === "user") {
+    if (localStorage.getItem("role") === "user") {
       // Check and set user
       setAuth({
         token: "user",
@@ -165,8 +93,6 @@ export const AuthProvider = ({ children }) => {
         copyText,
         smallAddress,
         mediumAddress,
-        allowSuperAdminLogin,
-        allowAdminLogin,
         allowUserLogin,
         logout,
       }}
