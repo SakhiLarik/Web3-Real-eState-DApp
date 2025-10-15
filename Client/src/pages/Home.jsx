@@ -1,5 +1,6 @@
 import React from "react";
 import Nav from "../components/Nav";
+import Footer from "../components/Footer";
 
 function Home() {
   return (
@@ -55,10 +56,7 @@ function Home() {
           </div>
         </div>
       </section>
-
-      <footer className="bg-blue-900 text-white text-center py-4">
-        <p>© 2025 Real Estate NFT Marketplace. All rights reserved.</p>
-      </footer>
+      <Footer />
     </div>
   );
 }
