@@ -46,20 +46,18 @@ const Register = () => {
     setSuccess("");
 
     try {
-      const response = await axios.post(`${api}/register`, {
-        method: "POST",
+      const response = await axios.post(`${api}/registerUser`,  JSON.stringify(formData), {
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
       });
 
-      const data = await response.json();
+      const data = await response.data;
 
-      if (response.ok) {
+      if (data.success) {
         // Use allowUserLogin to set auth state
         allowUserLogin({ user: data.user });
         setSuccess("Registration successful! Redirecting...");
         // Redirect to dashboard or home
-        setTimeout(() => navigate("/dashboard"), 2000);
+        setTimeout(() => navigate("/dashboard"),2000);
       } else {
         setError(data.message);
       }

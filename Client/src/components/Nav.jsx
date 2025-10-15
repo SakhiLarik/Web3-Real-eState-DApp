@@ -1,6 +1,9 @@
 import React from "react";
+import { useAuth } from "../context/AuthContext";
 
 function Nav() {
+  const { auth } = useAuth();
+
   return (
     <nav className="bg-blue-900 text-white p-4">
       <div className="container mx-auto flex justify-between items-center">
@@ -24,15 +27,33 @@ function Nav() {
           >
             Sellers
           </a>
-           <a
-            href="/register"
-            className="px-6 text-white py-2.5 rounded hover:bg-blue-500 "
-          >
-            Register
-          </a>
-          <a href="/login" className="px-6 text-white py-2.5 rounded hover:bg-blue-500 ">
-            Login 
-          </a>
+          {auth.user ? (
+            <>
+              {" "}
+              <a
+                href="/register"
+                className="px-6 text-white py-2.5 rounded hover:bg-blue-500 "
+              >
+                Register
+              </a>
+              <a
+                href="/login"
+                className="px-6 text-white py-2.5 rounded hover:bg-blue-500 "
+              >
+                Login
+              </a>
+            </>
+          ) : (
+            <>
+              {" "}
+              <a
+                href="/dashboard"
+                className="px-6 text-white py-2.5 rounded hover:bg-blue-500 "
+              >
+                Dashboard
+              </a>
+            </>
+          )}
         </div>
       </div>
     </nav>
