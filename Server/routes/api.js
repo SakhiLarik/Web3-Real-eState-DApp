@@ -54,7 +54,7 @@ router.post(
     const cnic = req.body.user_cnic;
     if (!req.file) {
       return res
-        .status(500)
+        .status(200)
         .json({ success: false, message: "No file provided." });
     }
     try {
@@ -66,7 +66,7 @@ router.post(
         res.status(200).json({ success: true, filename: req.file.filename });
       } else {
         res
-          .status(500)
+          .status(200)
           .json({ success: false, message: "Update failed! try again" });
       }
     } catch (error) {
@@ -83,7 +83,7 @@ router.post("/registerUser", async (req, res) => {
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ message: "User already exists" });
+      return res.status(200).json({success: true, message: "User already exists" });
     }
 
     // Create new user
@@ -100,14 +100,14 @@ router.post("/registerUser", async (req, res) => {
     if (user) {
       const blockchainUser = await contract.methods
         .registerUser(name, email, phone, password, walletAddress)
-        .send();
+        .send(trx);
+        res
+          .status(200)
+          .json({ success: true, message: "User registered successfully", user });
     }
 
-    res
-      .status(201)
-      .json({ success: true, message: "User registered successfully", user });
   } catch (error) {
-    res.status(500).json({ message: "Server error", error });
+    res.status(500).json({ success: false, message: "Server error", error });
   }
 });
 
@@ -120,10 +120,10 @@ router.post("/loginUser", async (req, res) => {
         .status(200)
         .json({ success: true, message: "Login successful", user });
     } else {
-      return res.status(400).json({ message: "Invalid credentials" });
+      return res.status(200).json({success: true, message: "Invalid credentials" });
     }
   } catch (error) {
-    res.status(500).json({ message: "Server error", error });
+    res.status(500).json({success: false, message: "Server error", error });
   }
 });
 
@@ -153,8 +153,8 @@ router.post("/loginUserWeb3", async (req, res) => {
     }
   } catch (error) {
     return res
-      .status(400)
-      .json({ message: "Wallet not registered on blockchain" });
+      .status(500)
+      .json({success: false, message: "Wallet not registered on blockchain" });
   }
 });
 

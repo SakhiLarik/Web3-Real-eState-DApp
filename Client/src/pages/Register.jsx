@@ -46,11 +46,11 @@ const Register = () => {
     setSuccess("");
 
     try {
-      const response = await axios.post(`${api}/registerUser`,  JSON.stringify(formData), {
+      const response = await axios.post(`${api}/registerUser`, JSON.stringify(formData), {
         headers: { "Content-Type": "application/json" },
       });
 
-      const data = await response.data;
+      const data = response.data;
 
       if (data.success) {
         // Use allowUserLogin to set auth state
@@ -62,7 +62,7 @@ const Register = () => {
         setError(data.message);
       }
     } catch (err) {
-      setError("Network error");
+      setError("Network error "+err.message);
     } finally {
       setLoading(false);
     }
