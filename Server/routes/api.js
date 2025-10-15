@@ -30,7 +30,6 @@ const storageUser = multer.diskStorage({
   },
 });
 
-const uploadUser = multer({ storage: storageUser });
 
 // Upload Docs Files Storage
 const StorageDocs = multer.diskStorage({
@@ -43,7 +42,19 @@ const StorageDocs = multer.diskStorage({
   },
 });
 
+
+const storageProperty = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "./Uploads/property/");
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + "-" + file.originalname);
+  },
+});
+
+const uploadUser = multer({ storage: storageUser });
 const uploadDocs = multer({ storage: StorageDocs });
+const uploadProperty = multer({ storage: storageProperty });
 
 // Upload Files => Anyone
 router.post(
@@ -157,6 +168,54 @@ router.post("/loginUserWeb3", async (req, res) => {
       .json({success: false, message: "Wallet not registered on blockchain" });
   }
 });
+
+
+
+// Submit Property Listing Request
+router.post(
+  "/property/request",
+  uploadProperty.single("image"),
+  async (req, res) => {
+    try {
+      const { title, location, price, description, userAddress } = req.body;
+      const image = req.file?.filename;
+
+      if (!image) {
+        return res.status(400).json({ message: "Image is required" });
+      }
+
+      const request = new Property({
+        userAddress,
+        title,
+        location,
+        price: parseFloat(price),
+        description,
+        image,
+        status: 'pending',
+      });
+
+      await request.save();
+
+      res.status(201).json({ message: "Listing request submitted", request });
+    } catch (error) {
+      res.status(500).json({ message: "Server error", error });
+    }
+  }
+);
+
+// Get Property Image
+router.get("/property/image/:tokenId", async (req, res) => {
+  try {
+    const property = await Property.findOne({ tokenId: req.params.tokenId });
+    if (!property) {
+      return res.status(404).json({ message: "Property not found" });
+    }
+    res.status(200).json({ image: property.image });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error });
+  }
+});
+
 
 router.use(express.json());
 
