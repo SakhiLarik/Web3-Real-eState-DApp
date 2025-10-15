@@ -1,9 +1,15 @@
 import React from "react";
 import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 function Nav() {
-  const { auth } = useAuth();
-
+  const { auth, logout } = useAuth();
+  const navigate = useNavigate();
+  const handleLogout = (e) =>{
+    e.preventDefault();
+    logout();
+    navigate("/login");
+  }
   return (
     <nav className="bg-blue-900 text-white p-4">
       <div className="container mx-auto flex justify-between items-center">
@@ -27,7 +33,7 @@ function Nav() {
           >
             Sellers
           </a>
-          {auth.user ? (
+          {!auth.token ? (
             <>
               {" "}
               <a
@@ -52,6 +58,11 @@ function Nav() {
               >
                 Dashboard
               </a>
+               <button onClick={handleLogout}
+                className="px-6 text-white py-2.5 rounded hover:bg-rose-500 "
+              >
+                Logout
+              </button>
             </>
           )}
         </div>

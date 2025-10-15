@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext"; // Assuming AuthContext.js is in contexts
 import Web3 from "web3"; // Assuming Web3.js is installed
 import axios from "axios";
@@ -46,9 +46,13 @@ const Register = () => {
     setSuccess("");
 
     try {
-      const response = await axios.post(`${api}/registerUser`, JSON.stringify(formData), {
-        headers: { "Content-Type": "application/json" },
-      });
+      const response = await axios.post(
+        `${api}/registerUser`,
+        JSON.stringify(formData),
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
 
       const data = response.data;
 
@@ -57,16 +61,25 @@ const Register = () => {
         allowUserLogin({ user: data.user });
         setSuccess("Registration successful! Redirecting...");
         // Redirect to dashboard or home
-        setTimeout(() => navigate("/dashboard"),2000);
+        setTimeout(() => navigate("/dashboard"), 2000);
       } else {
         setError(data.message);
       }
     } catch (err) {
-      setError("Network error "+err.message);
+      setError("Network error " + err.message);
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (error) {
+      setSuccess("");
+    }
+    if (success) {
+      setError("");
+    }
+  }, [setError, setSuccess, error, success]);
 
   return (
     <div>
@@ -115,7 +128,7 @@ const Register = () => {
               className="border p-2 mb-3 w-full rounded my-2"
             />
             <div className="mb-3 flex">
-               <input
+              <input
                 type="text"
                 name="walletAddress"
                 placeholder="Wallet Address (Connect wallet to see)"
@@ -130,7 +143,6 @@ const Register = () => {
               >
                 Connect Wallet
               </button>
-             
             </div>
             <button
               type="submit"
@@ -141,8 +153,11 @@ const Register = () => {
             </button>
           </form>
           <hr />
-          <p>Already have an account
-          <a className="mx-2" href="/login">Login Here</a>
+          <p>
+            Already have an account
+            <a className="mx-2" href="/login">
+              Login Here
+            </a>
           </p>
         </div>
       </div>

@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Web3 from "web3";
 import { useAuth } from "../context/AuthContext";
 import Nav from "../components/Nav";
 import Footer from "../components/Footer";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
   const { api, allowUserLogin, mediumAddress } = useAuth();
@@ -11,6 +12,7 @@ const Login = () => {
     email: "",
     password: "",
   });
+  const navigate = useNavigate();
   const [wallet, setWallet] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -28,7 +30,7 @@ const Login = () => {
         setWallet(accounts[0]);
         const response = await axios.post(
           `${api}/loginUserWeb3`,
-          JSON.stringify(formData),
+          { walletAddress: wallet },
           {
             headers: { "Content-Type": "application/json" },
           }
@@ -39,12 +41,12 @@ const Login = () => {
         if (data.success) {
           allowUserLogin({ user: data.user });
           setSuccess("Login successful! Redirecting...");
-          setTimeout(() => (window.location.href = "/dashboard"), 2000);
+          setTimeout(() => navigate("/dashboard"), 2000);
         } else {
           setError(data.message);
         }
       } catch (err) {
-        setError("Failed to connect wallet");
+        setError("Failed to connect wallet" + err.message);
       }
     } else {
       setError("MetaMask not detected");
@@ -59,7 +61,7 @@ const Login = () => {
 
     try {
       const response = await axios.post(
-        `${api}/login`,
+        `${api}/loginUser`,
         JSON.stringify(formData),
         {
           headers: { "Content-Type": "application/json" },
@@ -76,11 +78,19 @@ const Login = () => {
         setError(data.message);
       }
     } catch (err) {
-      setError("Network error");
+      setError("Network error" + err.message);
     } finally {
       setLoading(false);
     }
   };
+  useEffect(()=>{
+    if(error){
+      setSuccess("");
+    }
+    if(success){
+      setError("");
+    }
+  },[setError, setSuccess, error, success]);
   return (
     <div>
       <Nav />
