@@ -7,13 +7,14 @@ import Footer from "../components/Footer";
 import { useNavigate } from "react-router-dom";
 
 const Login = () => {
-  const { api, allowUserLogin, mediumAddress } = useAuth();
+  const { api, allowUserLogin, smallAddress } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
   const navigate = useNavigate();
   const [wallet, setWallet] = useState("");
+  const [walletText, setWalletText] = useState("Connect Wallet");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
@@ -41,12 +42,13 @@ const Login = () => {
         if (data.success) {
           allowUserLogin({ user: data.user });
           setSuccess("Login successful! Redirecting...");
-          setTimeout(() => navigate("/dashboard"), 2000);
+          navigate("/dashboard");
         } else {
           setError(data.message);
         }
       } catch (err) {
-        setError("Failed to connect wallet" + err.message);
+        setWalletText("Connect Wallet");
+        setError("Failed to login with wallet, try again");
       }
     } else {
       setError("MetaMask not detected");
@@ -73,7 +75,7 @@ const Login = () => {
       if (data.success) {
         allowUserLogin({ user: data.user });
         setSuccess("Login successful! Redirecting...");
-        setTimeout(() => (window.location.href = "/dashboard"), 2000);
+        navigate("/dashboard")
       } else {
         setError(data.message);
       }
@@ -135,14 +137,8 @@ const Login = () => {
               type="button"
               className="bg-green-500 hover:bg-blue-700 text-white p-2 w-full"
             >
-              {wallet ? (
-                mediumAddress(wallet)
-              ) : (
-                <>
-                  <i className="fa fas far fab fa-globe-europe"></i> Connect
-                  Wallet
-                </>
-              )}
+              {!wallet &&<><i className="fa fas far fab fa-globe-europe"></i> Connect Wallet </>}
+              {wallet &&<><i className="fa fas far fab fa-globe-europe"></i> {smallAddress(wallet)} Login</>}
             </button>
           </div>
           <hr />

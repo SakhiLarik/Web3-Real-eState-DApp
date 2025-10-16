@@ -9,6 +9,7 @@ import axios from "axios";
 
 const Dashboard = () => {
   const { api, auth, mediumAddress, copyText } = useAuth();
+  const wallet = auth.user?auth.user.wallet:"";
   const navigate = useNavigate();
   const [ownedCount, setOwnedCount] = useState(0);
   const [soldCount, setSoldCount] = useState(0);
@@ -39,35 +40,37 @@ const Dashboard = () => {
   // Fetch quantitative info
   useEffect(() => {
     const fetchStats = async () => {
-      if (!web3 || !contract || !auth.user.wallet) return;
+      if (!web3 || !contract || !wallet) return;
       try {
         // Owned count
         const tokenCount = await contract.methods.getTokenCounter().call();
         let owned = 0;
         for (let i = 1; i <= tokenCount; i++) {
           const owner = await contract.methods.ownerOf(i).call();
-          if (owner.toLowerCase() === auth.user.wallet.toLowerCase()) owned++;
+          if (owner.toLowerCase() === wallet.toLowerCase()) owned++;
         }
         setOwnedCount(owned);
 
         // Sold count from events
         const soldEvents = await contract.getPastEvents("PropertySold", {
-          filter: { seller: auth.user.wallet },
+          filter: { seller: wallet },
           fromBlock: 0,
         });
         setSoldCount(soldEvents.length);
 
         // Request count from MongoDB
-        const res = await axios.get(
-          `${api}/property/requests/${auth.user.wallet}`
-        );
-        setRequestCount(res.data.requests.length);
+        if(auth){
+          const res = await axios.get(
+            `${api}/property/requests/${wallet}`
+          );
+          setRequestCount(res.data.requests.length);
+        }
       } catch (err) {
         setError("Failed to fetch stats" + err);
       }
     };
     fetchStats();
-  }, [web3, contract, auth.user.wallet, api]);
+  }, [web3, contract, wallet, api]);
 
   const handleCopy = (text) => {
     copyText(text);
@@ -84,21 +87,21 @@ const Dashboard = () => {
           {success && <p className="text-green-500">{success}</p>}
           <div className="mb-8">
             <h2 className="text-2xl  font-semibold">
-              Welcome, {auth.user.name}
+              Welcome, {auth.user&&auth.user.name}
             </h2>
             <div className="flex items-center">
               <div className="m-3">
                 <p>
-                  <strong>Email:</strong> {auth.user.email}
+                  <strong>Email:</strong> {auth.user&&auth.user.email}
                 </p>
                 <p>
-                  <strong>Phone:</strong> {auth.user.phone}
+                  <strong>Phone:</strong> {auth.user&&auth.user.phone}
                 </p>
                 <p>
-                  <strong>Wallet:</strong> {mediumAddress(auth.user.wallet)}{" "}
+                  <strong>Wallet:</strong> {mediumAddress(wallet)}{" "}
                   <i
                     className="fas far fab fa-copy cursor-pointer"
-                    onClick={handleCopy(auth.user.wallet)}
+                    onClick={handleCopy(wallet)}
                   ></i>
                 </p>
               </div>

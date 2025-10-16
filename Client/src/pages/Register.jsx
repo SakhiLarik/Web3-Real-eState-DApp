@@ -61,7 +61,7 @@ const Register = () => {
         allowUserLogin({ user: data.user });
         setSuccess("Registration successful! Redirecting...");
         // Redirect to dashboard or home
-        setTimeout(() => navigate("/dashboard"), 2000);
+        navigate("/dashboard");
       } else {
         setError(data.message);
       }
