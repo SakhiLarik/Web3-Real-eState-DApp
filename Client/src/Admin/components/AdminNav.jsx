@@ -10,40 +10,24 @@ function AdminNav() {
         <h1 className="text-2xl font-bold">NFT Real Estate</h1>
         <div className="flex justify-between items-center">
           <a
-            href="/"
+            href="/admin/dashboard"
             className="px-6 text-white py-2.5 rounded hover:bg-blue-500 "
           >
             Home
           </a>
           <a
-            href="/properties"
+            href="/all_properties"
             className="px-6 text-white py-2.5 rounded hover:bg-blue-500 "
           >
             Properties
           </a>
           <a
-            href="/sellers"
+            href="/all_sellers"
             className="px-6 text-white py-2.5 rounded hover:bg-blue-500 "
           >
             Sellers
           </a>
-          {!auth.token ? (
-            <>
-              {" "}
-              <a
-                href="/register"
-                className="px-6 text-white py-2.5 rounded hover:bg-blue-500 "
-              >
-                Register
-              </a>
-              <a
-                href="/login"
-                className="px-6 text-white py-2.5 rounded hover:bg-blue-500 "
-              >
-                Login
-              </a>
-            </>
-          ) : (
+          {auth.token && (
             <AdminProfileDropdown />
           )}
         </div>

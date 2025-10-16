@@ -16,13 +16,13 @@ function Nav() {
             Home
           </a>
           <a
-            href="/properties"
+            href="/all_properties"
             className="px-6 text-white py-2.5 rounded hover:bg-blue-500 "
           >
             Properties
           </a>
           <a
-            href="/sellers"
+            href="/all_sellers"
             className="px-6 text-white py-2.5 rounded hover:bg-blue-500 "
           >
             Sellers

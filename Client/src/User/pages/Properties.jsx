@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import Nav from '../../components/Nav';
 import Footer from '../../components/Footer';
 import axios from 'axios';
+import AuthCheck from '../../components/AuthCheck';
 
 const Properties = () => {
   const { api, auth, mediumAddress } = useAuth();
@@ -155,6 +156,7 @@ const Properties = () => {
 
   return (
     <div>
+      <AuthCheck />
       <Nav />
       <div className="min-h-screen">
         <div className="max-w-4xl mx-auto my-5 p-8 shadow">

@@ -3,8 +3,8 @@ import { useAuth } from '../../context/AuthContext';
 import Web3 from 'web3';
 import { CONTRACT_ABI, CONTRACT_ADDRESS } from '../../config';
 import { useNavigate } from 'react-router-dom';
-import Nav from '../../components/Nav';
 import Footer from '../../components/Footer';
+import AdminNav from '../components/AdminNav';
 
 const AdminLogin = () => {
   const { api, allowAdminLogin, mediumAddress } = useAuth();
@@ -51,7 +51,7 @@ const AdminLogin = () => {
 
   return (
     <div>
-      <Nav />
+      <AdminNav />
       <div className="min-h-screen">
         <div className="max-w-md mx-auto my-5 p-8 shadow">
           <h2 className="text-3xl font-bold mb-4">Admin Login</h2>

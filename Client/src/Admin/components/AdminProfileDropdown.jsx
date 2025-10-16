@@ -68,12 +68,7 @@ const AdminProfileDropdown = () => {
             {/* A separator for visual clarity */}
             <div className="border-t border-gray-200 my-1"></div>
 
-            <button
-              onClick={handleLogout}
-              className="block w-full px-4 py-2 text-left text-sm text-rose-600 hover:bg-gray-200"
-            >
-              Logout
-            </button>
+            <button onClick={handleLogout} className="block w-full px-4 py-2 text-left text-sm text-rose-600 hover:bg-gray-200"> Logout </button>
           </div>
         </div>
       )}

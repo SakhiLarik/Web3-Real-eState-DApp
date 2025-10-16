@@ -2,15 +2,14 @@ import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../../context/AuthContext";
 import Web3 from "web3";
 import { CONTRACT_ABI, CONTRACT_ADDRESS } from "../../config";
-import { useNavigate } from "react-router-dom";
 import Nav from "../../components/Nav";
 import Footer from "../../components/Footer";
 import axios from "axios";
+import AuthCheck from "../../components/AuthCheck";
 
 const Dashboard = () => {
   const { api, auth, mediumAddress, copyText } = useAuth();
   const wallet = auth.user?auth.user.wallet:"";
-  const navigate = useNavigate();
   const [ownedCount, setOwnedCount] = useState(0);
   const [soldCount, setSoldCount] = useState(0);
   const [requestCount, setRequestCount] = useState(0)
@@ -77,6 +76,7 @@ const Dashboard = () => {
   };
   return (
     <div>
+      <AuthCheck />
       <Nav />
       <div className="min-h-screen">
         <hr />
