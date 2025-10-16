@@ -7,7 +7,7 @@ const userSchema = new mongoose.Schema({
     trim: true, // Removes whitespace from both ends of a string
     minlength: 3, // Minimum length of 3 characters
   },
-  profile:String,
+  profile: String,
   email: {
     type: String,
     required: true,
@@ -31,6 +31,18 @@ const userSchema = new mongoose.Schema({
   walletAddress: {
     type: String,
     required: true,
+  },
+  totalSold: {
+    type: Number,
+    default: 0,
+  },
+  totalBought: {
+    type: Number,
+    default: 0,
+  },
+  totalMintRequests: {
+    type: Number,
+    default: 0,
   },
   createdAt: {
     type: Date,

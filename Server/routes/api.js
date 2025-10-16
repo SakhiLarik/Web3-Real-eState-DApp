@@ -30,22 +30,10 @@ const storageUser = multer.diskStorage({
   },
 });
 
-
-// Upload Docs Files Storage
-const StorageDocs = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "./uploads/document/"); // Specify the destination folder
-    cb(null, "../client/public/uploads/document/"); // Specify the destination folder
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + "-" + file.originalname);
-  },
-});
-
-
 const storageProperty = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "./Uploads/property/");
+    cb(null, "./uploads/property/"); // Specify the destination folder
+    cb(null, "../client/public/uploads/property/"); // Specify the destination folder
   },
   filename: function (req, file, cb) {
     cb(null, Date.now() + "-" + file.originalname);
@@ -53,7 +41,6 @@ const storageProperty = multer.diskStorage({
 });
 
 const uploadUser = multer({ storage: storageUser });
-const uploadDocs = multer({ storage: StorageDocs });
 const uploadProperty = multer({ storage: storageProperty });
 
 // Upload Files => Anyone
@@ -62,7 +49,7 @@ router.post(
   uploadUser.single("profile"),
   async (req, res) => {
     const file = req.file;
-    const cnic = req.body.user_cnic;
+    const wallet = req.body.user;
     if (!req.file) {
       return res
         .status(200)
@@ -70,8 +57,8 @@ router.post(
     }
     try {
       let update = await User.updateOne(
-        { cnic: cnic },
-        { $set: { photo: req.file.filename } }
+        { walletAddress: wallet },
+        { $set: { profile: req.file.filename } }
       );
       if (update) {
         res.status(200).json({ success: true, filename: req.file.filename });
@@ -211,6 +198,16 @@ router.get("/property/image/:tokenId", async (req, res) => {
       return res.status(404).json({ message: "Property not found" });
     }
     res.status(200).json({ image: property.image });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error });
+  }
+});
+
+// Get User Property Requests
+router.get("/property/requests/:userAddress", async (req, res) => {
+  try {
+    const requests = await Property.find({ userAddress: req.params.userAddress });
+    res.status(200).json({ requests });
   } catch (error) {
     res.status(500).json({ message: "Server error", error });
   }
