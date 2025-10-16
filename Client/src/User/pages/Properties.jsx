@@ -51,7 +51,7 @@ const Properties = () => {
         const properties = [];
         for (let i = 1; i <= tokenCount; i++) {
           const owner = await contract.methods.ownerOf(i).call();
-          if (owner.toLowerCase() === auth.user.wallet.toLowerCase()) {
+          if (owner.toLowerCase() === auth.user?.wallet.toLowerCase()) {
             const details = await contract.methods.getPropertyDetails(i).call();
             const imageRes = await axios.get(`${api}/property/image/${i}`);
             properties.push({
@@ -76,7 +76,7 @@ const Properties = () => {
   useEffect(() => {
     const fetchRequestedProperties = async () => {
       try {
-        const res = await axios.get(`${api}/property/requests/${auth.user.wallet}`);
+        const res = await axios.get(`${api}/property/requests/${auth.user?.wallet}`);
         setRequestedProperties(res.data.requests.map(req => ({
           ...req,
           price: req.price.toString(),
@@ -109,18 +109,18 @@ const Properties = () => {
     formData.append('price', listingForm.price);
     formData.append('description', listingForm.description);
     formData.append('image', listingForm.image);
-    formData.append('userAddress', auth.user.wallet);
+    formData.append('userAddress', auth.user?.wallet);
 
     try {
       const response = await axios.post(`${api}/property/request`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      if (response.status === 201) {
+      if (response.data.success) {
         setSuccess('Listing request submitted! Awaiting admin approval.');
         setListingForm({ title: '', location: '', price: '', description: '', image: null });
         setShowPopup(false);
         // Refresh requested properties
-        const res = await axios.get(`${api}/property/requests/${auth.user.wallet}`);
+        const res = await axios.get(`${api}/property/requests/${auth.user?.wallet}`);
         setRequestedProperties(res.data.requests);
       } else {
         setError(response.data.message);
@@ -136,7 +136,7 @@ const Properties = () => {
   const listForSale = async (tokenId, price) => {
     try {
       const weiPrice = web3.utils.toWei(price.toString(), 'ether');
-      await contract.methods.listPropertyForSale(tokenId, weiPrice).send({ from: auth.user.wallet });
+      await contract.methods.listPropertyForSale(tokenId, weiPrice).send({ from: auth.user?.wallet });
       setSuccess(`Property #${tokenId} listed for sale!`);
       setOwnedProperties(prev =>
         prev.map(prop =>

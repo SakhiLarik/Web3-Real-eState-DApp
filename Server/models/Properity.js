@@ -1,6 +1,10 @@
 const mongoose = require("mongoose");
 
 const properitySchema = new mongoose.Schema({
+   userAddress: {
+    type: String,
+    required: true,
+  },
   title: {
     type: String,
     required: true,
@@ -17,10 +21,10 @@ const properitySchema = new mongoose.Schema({
     required: true,
   },
   description: {
-    type: text,
+    type: String,
     required: true,
   },
-  owner: {
+  image: {
     type: String,
     required: true,
   },

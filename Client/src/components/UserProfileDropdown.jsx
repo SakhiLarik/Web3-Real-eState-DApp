@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { Link } from 'react-router-dom';
 
 const UserProfileDropdown = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { auth, logout } = useAuth();  
+  const { logout } = useAuth();  
   const navigate = useNavigate();
   
 

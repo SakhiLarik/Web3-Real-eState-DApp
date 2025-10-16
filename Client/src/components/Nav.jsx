@@ -1,16 +1,9 @@
 import React from "react";
 import { useAuth } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
 import UserProfileDropdown from "./UserProfileDropdown";
 
 function Nav() {
-  const { auth, logout } = useAuth();
-  const navigate = useNavigate();
-  const handleLogout = (e) =>{
-    e.preventDefault();
-    logout();
-    navigate("/login");
-  }
+  const { auth } = useAuth();
   return (
     <nav className="bg-blue-900 text-white p-4">
       <div className="container mx-auto flex justify-between items-center">
@@ -29,7 +22,7 @@ function Nav() {
             Properties
           </a>
           <a
-            href="dashboard.html"
+            href="/sellers"
             className="px-6 text-white py-2.5 rounded hover:bg-blue-500 "
           >
             Sellers
