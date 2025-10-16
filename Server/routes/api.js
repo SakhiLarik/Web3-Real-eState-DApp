@@ -151,7 +151,7 @@ router.post("/loginUserWeb3", async (req, res) => {
     }
   } catch (error) {
     return res
-      .status(500)
+      .status(200)
       .json({success: false, message: "Wallet not registered on blockchain" });
   }
 });

@@ -1,3 +1,4 @@
+import { CONTRACT_ABI, CONTRACT_ADDRESS } from "../config";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Web3 from "web3";
@@ -14,7 +15,6 @@ const Login = () => {
   });
   const navigate = useNavigate();
   const [wallet, setWallet] = useState("");
-  const [walletText, setWalletText] = useState("Connect Wallet");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
@@ -28,26 +28,22 @@ const Login = () => {
         const web3 = new Web3(window.ethereum);
         await window.ethereum.request({ method: "eth_requestAccounts" });
         const accounts = await web3.eth.getAccounts();
-        setWallet(accounts[0]);
-        const response = await axios.post(
-          `${api}/loginUserWeb3`,
-          { walletAddress: wallet },
-          {
-            headers: { "Content-Type": "application/json" },
-          }
-        );
-
-        const data = await response.data;
-
-        if (data.success) {
-          allowUserLogin({ user: data.user });
+        const walletAddress = accounts[0];
+        setWallet(walletAddress);
+        const res = await axios.post(`${api}/loginUserWeb3`, {walletAddress:walletAddress} ,{
+          headers:{
+            "Content-Type":"application/json",
+          },
+        });
+        const user = res.data.user;
+        if (user && walletAddress.toLowerCase() === user.walletAddress.toLowerCase()) {
+          allowUserLogin({ user });
           setSuccess("Login successful! Redirecting...");
           navigate("/dashboard");
         } else {
-          setError(data.message);
+          setError("Sorry your account is not registerd!");
         }
       } catch (err) {
-        setWalletText("Connect Wallet");
         setError("Failed to login with wallet, try again");
       }
     } else {
@@ -75,7 +71,7 @@ const Login = () => {
       if (data.success) {
         allowUserLogin({ user: data.user });
         setSuccess("Login successful! Redirecting...");
-        navigate("/dashboard")
+        navigate("/dashboard");
       } else {
         setError(data.message);
       }
@@ -85,14 +81,14 @@ const Login = () => {
       setLoading(false);
     }
   };
-  useEffect(()=>{
-    if(error){
+  useEffect(() => {
+    if (error) {
       setSuccess("");
     }
-    if(success){
+    if (success) {
       setError("");
     }
-  },[setError, setSuccess, error, success]);
+  }, [setError, setSuccess, error, success]);
   return (
     <div>
       <Nav />
@@ -137,8 +133,18 @@ const Login = () => {
               type="button"
               className="bg-green-500 hover:bg-blue-700 text-white p-2 w-full"
             >
-              {!wallet &&<><i className="fa fas far fab fa-globe-europe"></i> Connect Wallet </>}
-              {wallet &&<><i className="fa fas far fab fa-globe-europe"></i> {smallAddress(wallet)} Login</>}
+              {!wallet && (
+                <>
+                  <i className="fa fas far fab fa-globe-europe"></i> Connect
+                  Wallet{" "}
+                </>
+              )}
+              {wallet && (
+                <>
+                  <i className="fa fas far fab fa-globe-europe"></i>{" "}
+                  {smallAddress(wallet)} Login
+                </>
+              )}
             </button>
           </div>
           <hr />
