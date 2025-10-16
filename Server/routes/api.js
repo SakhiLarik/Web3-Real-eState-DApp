@@ -282,6 +282,94 @@ router.get("/admin/property/requests", async (req, res) => {
 });
 
 
+// Get All Pending Mint Requests (Admin)
+router.get("/admin/property/requests", async (req, res) => {
+  try {
+    const wallet = req.query.wallet;
+    if (!wallet) {
+      return res.status(400).json({ message: "Wallet address required" });
+    }
+
+    const owner = await contract.methods.owner().call();
+    if (wallet.toLowerCase() !== owner.toLowerCase()) {
+      return res.status(403).json({ message: "Unauthorized - Not admin" });
+    }
+
+    const requests = await Property.find({ status: 'pending' });
+
+    res.status(200).json({ requests });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error });
+  }
+});
+
+// Approve Mint Request (Admin)
+router.post("/admin/property/approve/:requestId", async (req, res) => {
+  try {
+    const { wallet } = req.body;
+    if (!wallet) {
+      return res.status(400).json({ message: "Wallet address required" });
+    }
+
+    const owner = await contract.methods.owner().call();
+    if (wallet.toLowerCase() !== owner.toLowerCase()) {
+      return res.status(403).json({ message: "Unauthorized - Not admin" });
+    }
+
+    const request = await Property.findById(req.params.requestId);
+    if (!request || request.status !== 'pending') {
+      return res.status(400).json({ message: "Invalid request" });
+    }
+
+    // Mint on blockchain
+    const weiPrice = web3.utils.toWei(request.price.toString(), 'ether');
+    const tx = await contract.methods
+      .mintProperty(request.userAddress, request.title, request.location, weiPrice)
+      .send({ from: adminAccount.address, gas: 3000000 });
+
+    const tokenId = tx.events.PropertyMinted.returnValues.tokenId;
+
+    // Update MongoDB
+    request.tokenId = tokenId;
+    request.status = 'approved';
+    request.updatedAt = Date.now();
+    await request.save();
+
+    res.status(200).json({ message: "Request approved and minted", tokenId });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error });
+  }
+});
+
+// Reject Mint Request (Admin)
+router.post("/admin/property/reject/:requestId", async (req, res) => {
+  try {
+    const { wallet } = req.body;
+    if (!wallet) {
+      return res.status(400).json({ message: "Wallet address required" });
+    }
+
+    const owner = await contract.methods.owner().call();
+    if (wallet.toLowerCase() !== owner.toLowerCase()) {
+      return res.status(403).json({ message: "Unauthorized - Not admin" });
+    }
+
+    const request = await Property.findById(req.params.requestId);
+    if (!request || request.status !== 'pending') {
+      return res.status(400).json({ message: "Invalid request" });
+    }
+
+    // Update MongoDB
+    request.status = 'rejected';
+    request.updatedAt = Date.now();
+    await request.save();
+
+    res.status(200).json({ message: "Request rejected" });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error });
+  }
+});
+
 router.use(express.json());
 
 router.get("/", (req, res) => {

@@ -9,7 +9,7 @@ export const AuthProvider = ({ children }) => {
     role: localStorage.getItem("role") || null,
     loading: localStorage.getItem("loading") || false,
   });
-  
+
   const emptyWallet = "0x0000000000000000000000000000000000000000";
 
   const api = "http://localhost:5000/api";
@@ -42,6 +42,30 @@ export const AuthProvider = ({ children }) => {
     return true;
   };
 
+  const allowAdminLogin = (credentials) => {
+    setAuth({
+      token: "admin-token",
+      user: {
+        name: credentials.name,
+        wallet: credentials.walletAddress,
+      },
+      role: "admin",
+      loading: false,
+    });
+    // Save to localstorage
+    localStorage.setItem("token", "admin-token");
+    localStorage.setItem(
+      "user",
+      JSON.stringify({
+        name: credentials.user.name,
+        wallet: credentials.user.walletAddress,
+      })
+    );
+    localStorage.setItem("role", "admin");
+    localStorage.setItem("loading", "false");
+    return true;
+  };
+
   const smallAddress = (address) => {
     return address.length > 10
       ? address.substr(0, 5) + "..." + address.substr(-5)
@@ -54,10 +78,18 @@ export const AuthProvider = ({ children }) => {
 
   // Check if someone is already logged in
   useEffect(() => {
-    if (localStorage.getItem("role") === "user") {
+    if (localStorage.getItem("role") === "admin") {
       // Check and set user
       setAuth({
-        token: "user",
+        token: "admin-token",
+        user: JSON.parse(localStorage.getItem("user")),
+        role: "admin",
+        loading: false,
+      });
+    } else if (localStorage.getItem("role") === "user") {
+      // Check and set user
+      setAuth({
+        token: "user-token",
         user: JSON.parse(localStorage.getItem("user")),
         role: "user",
         loading: false,
@@ -96,6 +128,7 @@ export const AuthProvider = ({ children }) => {
         smallAddress,
         mediumAddress,
         allowUserLogin,
+        allowAdminLogin,
         logout,
       }}
     >

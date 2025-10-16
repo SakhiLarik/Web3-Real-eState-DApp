@@ -6,6 +6,9 @@ import Login from './pages/Login';
 import Dashboard from './User/pages/Dashboard';
 import Properties from './User/pages/Properties';
 import History from './User/pages/History';
+import AdminLogin from './Admin/pages/AdminLogin';
+import AdminDashboard from './Admin/pages/AdminDashboard';
+import PropertyRequests from './Admin/pages/PropertyRequests';
 const App = () => {
   return (
     <Router>
@@ -16,6 +19,11 @@ const App = () => {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/history" element={<History />} />
         <Route path="/properties" element={<Properties />} />
+        {/* Admin Routes */}
+        <Route path="/admin/" element={<AdminLogin />} />
+        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/admin/properties_requests" element={<PropertyRequests />} />
       </Routes>
     </Router>
   );
