@@ -203,6 +203,17 @@ router.get("/property/image/:tokenId", async (req, res) => {
   }
 });
 
+// Get User Details
+router.get("/user/:wallet", async (req, res) => {
+  try {
+    const requests = await User.find({ walletAddress: req.params.wallet });
+    res.status(200).json({success:true, user:requests });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error });
+  }
+});
+
+
 // Get User Property Requests
 router.get("/property/requests/:userAddress", async (req, res) => {
   try {
