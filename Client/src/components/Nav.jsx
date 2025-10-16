@@ -58,6 +58,18 @@ function Nav() {
               >
                 Dashboard
               </a>
+              <a
+                href="/properties"
+                className="px-6 text-white py-2.5 rounded hover:bg-blue-500 "
+              >
+                My Properties
+              </a>
+              <a
+                href="/history"
+                className="px-6 text-white py-2.5 rounded hover:bg-blue-500 "
+              >
+                My Records
+              </a>
                <button onClick={handleLogout}
                 className="px-6 text-white py-2.5 rounded hover:bg-rose-500 "
               >
