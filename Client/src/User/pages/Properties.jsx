@@ -165,7 +165,7 @@ const Properties = () => {
 
           {/* Owned Properties */}
           <div className="mb-8">
-            <h2 className="text-2xl font-semibold mb-2">Owned Properties</h2>
+            <h2 className="text-2xl text-secondary font-semibold mb-2">Owned Properties</h2>
             {ownedProperties.length === 0 ? (
               <p>No owned properties.</p>
             ) : (
@@ -212,15 +212,18 @@ const Properties = () => {
             )}
           </div>
 
+<hr />
           {/* Requested Properties */}
           <div className="mb-8">
-            <h2 className="text-2xl font-semibold mb-2">Requested Properties</h2>
+            <div className='flex justify-between my-4 items-center'>
+            <h2 className="text-2xl text-secondary font-semibold mb-2">Requested Properties</h2>
             <button
               onClick={() => setShowPopup(true)}
-              className="bg-green-500 text-white p-2 mb-4 rounded hover:bg-green-700"
+              className="bg-green-500 px-4 text-white p-1 rounded hover:bg-green-700"
             >
               Request New Property
             </button>
+            </div>
             {requestedProperties.length === 0 ? (
               <p>No requests made.</p>
             ) : (
@@ -251,7 +254,7 @@ const Properties = () => {
         {/* Popup for New Request */}
         {showPopup && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-            <div className="bg-white p-8 rounded shadow max-w-md w-full">
+            <div className="bg-white p-5 rounded shadow max-w-xl w-full">
               <h2 className="text-2xl font-semibold mb-4">Request New Property</h2>
               <form onSubmit={handleListingSubmit}>
                 <input
@@ -286,6 +289,8 @@ const Properties = () => {
                   placeholder="Description"
                   value={listingForm.description}
                   onChange={handleListingChange}
+                  required
+                  rows={5}
                   className="border p-2 mb-3 w-full rounded"
                 />
                 <input
@@ -300,14 +305,14 @@ const Properties = () => {
                   <button
                     type="button"
                     onClick={() => setShowPopup(false)}
-                    className="bg-gray-500 text-white p-2 mr-2 rounded hover:bg-gray-700"
+                    className="bg-gray-500 text-white p-2 px-4 mr-2 rounded hover:bg-gray-700"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={loading}
-                    className="bg-blue-500 text-white p-2 rounded hover:bg-blue-700"
+                    className="bg-blue-600 text-white p-2 px-4 rounded hover:bg-blue-800"
                   >
                     {loading ? 'Submitting...' : 'Submit'}
                   </button>

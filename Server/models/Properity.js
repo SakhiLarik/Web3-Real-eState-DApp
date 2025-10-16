@@ -16,6 +16,10 @@ const properitySchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  description: {
+    type: text,
+    required: true,
+  },
   owner: {
     type: String,
     required: true,

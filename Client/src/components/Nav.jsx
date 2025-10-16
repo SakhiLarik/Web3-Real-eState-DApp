@@ -1,6 +1,7 @@
 import React from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import UserProfileDropdown from "./UserProfileDropdown";
 
 function Nav() {
   const { auth, logout } = useAuth();
@@ -14,7 +15,7 @@ function Nav() {
     <nav className="bg-blue-900 text-white p-4">
       <div className="container mx-auto flex justify-between items-center">
         <h1 className="text-2xl font-bold">NFT Real Estate</h1>
-        <div>
+        <div className="flex justify-between items-center">
           <a
             href="/"
             className="px-6 text-white py-2.5 rounded hover:bg-blue-500 "
@@ -50,32 +51,7 @@ function Nav() {
               </a>
             </>
           ) : (
-            <>
-              {" "}
-              <a
-                href="/dashboard"
-                className="px-6 text-white py-2.5 rounded hover:bg-blue-500 "
-              >
-                Dashboard
-              </a>
-              <a
-                href="/properties"
-                className="px-6 text-white py-2.5 rounded hover:bg-blue-500 "
-              >
-                My Properties
-              </a>
-              <a
-                href="/history"
-                className="px-6 text-white py-2.5 rounded hover:bg-blue-500 "
-              >
-                My Records
-              </a>
-               <button onClick={handleLogout}
-                className="px-6 text-white py-2.5 rounded hover:bg-rose-500 "
-              >
-                Logout
-              </button>
-            </>
+            <UserProfileDropdown />
           )}
         </div>
       </div>
