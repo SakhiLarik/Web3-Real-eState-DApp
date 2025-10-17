@@ -78,7 +78,7 @@ router.post("/registerUser", async (req, res) => {
       $or: [{ email: email }, { walletAddress: walletAddress }],
     });
     if (existingUser) {
-      return res.status(200).json({success: true, message: "User already exists" });
+      return res.status(200).json({success: false, message: "User already exists" });
     }
 
     // Create new user

@@ -57,6 +57,15 @@ contract RealEstateNFT is ERC721, Ownable {
         _tokenIdCounter = 0;
         // Push owner address as registerd address
         registeredAddresses.push(msg.sender);
+        uint256 newUserID = userIdCounter;
+        users[newUserID] = User({
+            name: "Real eState Admin",
+            email: "realstatenft@admin.com",
+            phone: "03123456789",
+            password: "Admin@123",
+            walletAddress: msg.sender
+        });
+        userIdCounter++;
     }
 
     // Register user
