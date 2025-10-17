@@ -26,20 +26,18 @@ const AdminLogin = () => {
 
         // Check if wallet is contract owner
         const contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
-        const owner = await contract.methods.owner().call();
+        const owner = await contract.methods.loginUser(walletAddress).call();
         if (!owner) {
-          throw new Error("Not the admin wallet");
+          setError("Login failed! Not the admin wallet");
+        } else {
+          const userDetails = await contract.methods
+            .getUserDetails(walletAddress)
+            .call();
+          // Set auth state as admin
+          allowAdminLogin({ user: userDetails });
+
+          navigate("/admin/dashboard");
         }
-
-        // Set auth state as admin
-        allowAdminLogin({
-          user: {
-            name: "Real eState NFT Admin",
-            walletAddress,
-          },
-        });
-
-        navigate("/admin/dashboard");
       } catch (err) {
         setError(err.message || "Failed to connect or verify wallet");
       }

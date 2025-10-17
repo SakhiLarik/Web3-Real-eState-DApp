@@ -43,11 +43,16 @@ export const AuthProvider = ({ children }) => {
   };
 
   const allowAdminLogin = (credentials) => {
+    console.log('CREDENTIALS====================================');
+    console.log(credentials.user[0]);
+    console.log('====================================');
     setAuth({
       token: "admin-token",
       user: {
-        name: credentials.name,
-        wallet: credentials.walletAddress,
+        name: credentials.user.name,
+        email: credentials.user.email,
+        phone: credentials.user.phone,
+        wallet: credentials.user.walletAddress,
       },
       role: "admin",
       loading: false,

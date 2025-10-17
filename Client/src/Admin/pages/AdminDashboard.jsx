@@ -43,7 +43,7 @@ const AdminDashboard = () => {
 
         // Total users
         const users = await contract.methods.getUserCount().call();
-        setTotalUsers(Number(users));
+        setTotalUsers(Number(users)-1);
 
         // Total pending requests
         const res = await axios.get(`${api}/admin/property/requests/${auth.user.wallet}`);
@@ -56,7 +56,7 @@ const AdminDashboard = () => {
   }, [web3, contract, auth.user?.wallet, api]);
 
   if (auth.role !== 'admin') {
-    navigate('/login');
+    navigate('/admin/login');
     return null;
   }
 
@@ -65,7 +65,7 @@ const AdminDashboard = () => {
       <AdminNav />
       <div className="min-h-screen">
         <div className="max-w-4xl mx-auto my-5 p-8 shadow">
-          <h1 className="text-3xl font-bold mb-4">Admin Dashboard</h1>
+          <h1 className="text-3xl font-bold mb-4">Welcome {auth.user.name}</h1>
           <hr />
           {error && <p className="text-red-500">{error}</p>}
 
