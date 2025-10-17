@@ -74,7 +74,9 @@ router.post("/registerUser", async (req, res) => {
     const trx = { from: walletAddress, gas: 3000000 };
 
     // Check if user already exists
-    const existingUser = await User.findOne({ email:email, walletAddress: walletAddress });
+    const existingUser = await User.findOne({
+      $or: [{ email: email }, { walletAddress: walletAddress }],
+    });
     if (existingUser) {
       return res.status(200).json({success: true, message: "User already exists" });
     }

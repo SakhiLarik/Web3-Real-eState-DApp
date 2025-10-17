@@ -66,7 +66,7 @@ const Register = () => {
         setError(data.message);
       }
     } catch (err) {
-      setError("Network error " + err.message);
+      setError("Registration Failed! This email or wallet address is already registered!");
     } finally {
       setLoading(false);
     }
