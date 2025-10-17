@@ -55,6 +55,8 @@ contract RealEstateNFT is ERC721, Ownable {
 
     constructor() ERC721("RealEstateNFT", "RENFT") Ownable(msg.sender) {
         _tokenIdCounter = 0;
+        // Push owner address as registerd address
+        registeredAddresses.push(msg.sender);
     }
 
     // Register user
@@ -65,6 +67,12 @@ contract RealEstateNFT is ERC721, Ownable {
         string memory password,
         address walletAddress
     ) public returns (User memory) {
+        // Check if wallet is already registered
+        for (uint256 i = 0; i < registeredAddresses.length; i++) {
+            if (registeredAddresses[i] == walletAddress) {
+                revert("Wallet address already registered");
+            }
+        }
         registeredAddresses.push(walletAddress);
         uint256 newUserID = userIdCounter;
         users[newUserID] = User({
@@ -76,6 +84,19 @@ contract RealEstateNFT is ERC721, Ownable {
         });
         userIdCounter++;
         return users[newUserID];
+    }
+    // Login user with wallet address only
+    function loginUser(address walletAddress)
+        public
+        view
+        returns (bool)
+    {
+        for (uint256 i = 0; i < registeredAddresses.length; i++) {
+            if (registeredAddresses[i] == walletAddress) {
+                return true;
+            }
+        }
+        return false;
     }
 
     // Get user details

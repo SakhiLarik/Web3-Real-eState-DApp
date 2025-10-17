@@ -1,6 +1,6 @@
 const { Web3 } = require("web3");
 const User = require("../models/User");
-const Property = require("../models/Properity");
+const Property = require("../models/Property");
 const Images = require("../models/Images");
 const abi = require("../../Contract/RealStateNFT.json");
 require("dotenv").config();

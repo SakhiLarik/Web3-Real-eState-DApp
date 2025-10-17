@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const properitySchema = new mongoose.Schema({
+const propertySchema = new mongoose.Schema({
   userAddress: {
     type: String,
     required: true,
@@ -44,11 +44,11 @@ const properitySchema = new mongoose.Schema({
   },
 });
 
-properitySchema.pre("save", function (next) {
+propertySchema.pre("save", function (next) {
   this.updatedAt = Date.now();
   next();
 });
 
-const Properity = mongoose.model("Properity", properitySchema);
+const Property = mongoose.model("Property", propertySchema);
 
-module.exports = Properity;
+module.exports = Property;
