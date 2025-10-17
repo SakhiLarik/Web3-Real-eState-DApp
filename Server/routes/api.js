@@ -11,12 +11,7 @@ const multer = require("multer");
 const web3 = new Web3(process.env.GANACHE_URL || "http://127.0.0.1:7545");
 const contractAddress = process.env.CONTRACT_ADDRESS;
 const contract = new web3.eth.Contract(abi, contractAddress);
-
-// Admin account for signing transactions (from Ganache)
-// const adminPrivateKey = process.env.ADMIN_PRIVATE_KEY; // Add to .env
-// const adminAccount = web3.eth.accounts.privateKeyToAccount(adminPrivateKey);
-// web3.eth.accounts.wallet.add(adminPrivateKey);
-
+const adminAccount = process.env.ADMIN_PRIVATE_KEY;
 
 const router = express.Router();
 // Upload Files Storage
@@ -79,7 +74,7 @@ router.post("/registerUser", async (req, res) => {
     const trx = { from: walletAddress, gas: 3000000 };
 
     // Check if user already exists
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email:email, walletAddress: walletAddress });
     if (existingUser) {
       return res.status(200).json({success: true, message: "User already exists" });
     }
@@ -211,7 +206,6 @@ router.post(
         price: parseFloat(price),
         description: description,
         image,
-        isListed: false
       });
 
       await request.save();
@@ -248,7 +242,7 @@ router.get("/property/user/:userAddress", async (req, res) => {
             owner: details[3],
             isListed: details[4],
             image: mongoProp?.image || '',
-            status: 'owned', // Added for distinction
+            status: 'Owned', // Added for distinction
           });
         }
       } catch {} // Skip invalid tokens
@@ -260,46 +254,25 @@ router.get("/property/user/:userAddress", async (req, res) => {
   }
 });
 
-// Get All Pending Mint Requests (Admin only)
-router.get("/admin/property/requests", async (req, res) => {
-  try {
-    const wallet = req.query.wallet; // Assume passed as query; use auth in production
-    if (!wallet) {
-      return res.status(400).json({ message: "Wallet address required" });
-    }
-
-    const owner = await contract.methods.owner().call();
-    if (wallet.toLowerCase() !== owner.toLowerCase()) {
-      return res.status(403).json({ message: "Unauthorized - Not admin" });
-    }
-
-    const requests = await Property.find({ status: 'pending' }).populate('userAddress', 'name email'); // Optional populate if needed
-
-    res.status(200).json({ requests });
-  } catch (error) {
-    res.status(500).json({ message: "Server error", error });
-  }
-});
-
 
 // Get All Pending Mint Requests (Admin)
-router.get("/admin/property/requests", async (req, res) => {
+router.get("/admin/property/requests/:wallet", async (req, res) => {
   try {
-    const wallet = req.query.wallet;
+    const wallet = req.params.wallet;
     if (!wallet) {
-      return res.status(400).json({ message: "Wallet address required" });
+      return res.status(200).json({ success:false, message: "Wallet address required" });
     }
 
     const owner = await contract.methods.owner().call();
     if (wallet.toLowerCase() !== owner.toLowerCase()) {
-      return res.status(403).json({ message: "Unauthorized - Not admin" });
+      return res.status(403).json({success:false, message: "Unauthorized - Not admin" });
     }
 
-    const requests = await Property.find({ status: 'pending' });
+    const requests = await Property.find({ isListed: false, status:"Pending" });
 
-    res.status(200).json({ requests });
+    res.status(200).json({ success:true, requests });
   } catch (error) {
-    res.status(500).json({ message: "Server error", error });
+    res.status(200).json({ success:false, message: "Server error"+ error.message });
   }
 });
 
@@ -308,36 +281,39 @@ router.post("/admin/property/approve/:requestId", async (req, res) => {
   try {
     const { wallet } = req.body;
     if (!wallet) {
-      return res.status(400).json({ message: "Wallet address required" });
+      return res.status(400).json({ success: false, message: "Wallet address required" });
     }
 
     const owner = await contract.methods.owner().call();
     if (wallet.toLowerCase() !== owner.toLowerCase()) {
-      return res.status(403).json({ message: "Unauthorized - Not admin" });
+      return res.status(403).json({ success: false, message: "Unauthorized - Not admin" });
     }
 
     const request = await Property.findById(req.params.requestId);
-    if (!request || request.status !== 'pending') {
-      return res.status(400).json({ message: "Invalid request" });
+    if (request && !request.isListed) {
+      // If there is a property and it is not listed yet
+      // Mint on blockchain
+      const weiPrice = web3.utils.toWei(request.price.toString(), 'ether');
+      const tx = await contract.methods
+        .mintProperty(request.userAddress, request.title, request.location, weiPrice)
+        .send({ from: adminAccount, gas: 3000000 });
+  
+      const tokenId = tx.events.PropertyMinted.returnValues.tokenId;
+  
+      // Update MongoDB
+      request.tokenId = tokenId.toString();
+      request.isListed = true;
+      request.status = "Approved";
+      request.updatedAt = Date.now();
+      await request.save();
+  
+      res.status(200).json({ success:true, message: "Request approved and minted", tokenId });
+    }else{
+      return res.status(400).json({success:false, message: "Invalid request" });
     }
 
-    // Mint on blockchain
-    const weiPrice = web3.utils.toWei(request.price.toString(), 'ether');
-    const tx = await contract.methods
-      .mintProperty(request.userAddress, request.title, request.location, weiPrice)
-      .send({ from: adminAccount.address, gas: 3000000 });
-
-    const tokenId = tx.events.PropertyMinted.returnValues.tokenId;
-
-    // Update MongoDB
-    request.tokenId = tokenId;
-    request.status = 'approved';
-    request.updatedAt = Date.now();
-    await request.save();
-
-    res.status(200).json({ message: "Request approved and minted", tokenId });
   } catch (error) {
-    res.status(500).json({ message: "Server error", error });
+    res.status(500).json({ success:false, message: "Server error"+ error.message });
   }
 });
 
@@ -346,27 +322,29 @@ router.post("/admin/property/reject/:requestId", async (req, res) => {
   try {
     const { wallet } = req.body;
     if (!wallet) {
-      return res.status(400).json({ message: "Wallet address required" });
+      return res.status(403).json({success:false, message: "Wallet address required" });
     }
 
     const owner = await contract.methods.owner().call();
     if (wallet.toLowerCase() !== owner.toLowerCase()) {
-      return res.status(403).json({ message: "Unauthorized - Not admin" });
+      return res.status(403).json({success:false, message: "Unauthorized - Not admin" });
     }
 
     const request = await Property.findById(req.params.requestId);
-    if (!request || request.status !== 'pending') {
-      return res.status(400).json({ message: "Invalid request" });
+    if (request && !request.isListed) {
+      // If there is a property and it is not listed
+      // Update MongoDB
+      request.status = "Rejected";
+      request.updatedAt = Date.now();
+      await request.save();
+  
+      res.status(200).json({ success:true, message: "Request rejected" });
+    }else{
+      return res.status(200).json({success:false, message: "Invalid request" });
     }
 
-    // Update MongoDB
-    request.status = 'rejected';
-    request.updatedAt = Date.now();
-    await request.save();
-
-    res.status(200).json({ message: "Request rejected" });
   } catch (error) {
-    res.status(500).json({ message: "Server error", error });
+    res.status(500).json({ success:false, message: "Server error"+ error.message });
   }
 });
 

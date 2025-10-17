@@ -31,6 +31,7 @@ const userSchema = new mongoose.Schema({
   walletAddress: {
     type: String,
     required: true,
+    unique: true,
   },
   totalSold: {
     type: Number,

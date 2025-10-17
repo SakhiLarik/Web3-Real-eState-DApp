@@ -46,10 +46,10 @@ const AdminDashboard = () => {
         setTotalUsers(Number(users));
 
         // Total pending requests
-        const res = await axios.get(`${api}/admin/property/requests?wallet=${auth.user.wallet}`);
+        const res = await axios.get(`${api}/admin/property/requests/${auth.user.wallet}`);
         setTotalRequests(res.data.requests.length);
       } catch (err) {
-        setError('Failed to fetch statistics');
+        setError('Failed to fetch statistics'+err.message);
       }
     };
     fetchStats();
@@ -89,7 +89,7 @@ const AdminDashboard = () => {
           <div>
             <button
               onClick={() => navigate('/admin/properties_requests')}
-              className="bg-blue-500 text-white p-2 rounded hover:bg-blue-700"
+              className="bg-blue-500 text-white p-2 px-4 rounded hover:bg-blue-700"
             >
               Manage Property Requests
             </button>

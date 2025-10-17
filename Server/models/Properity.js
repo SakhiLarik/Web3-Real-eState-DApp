@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const properitySchema = new mongoose.Schema({
-   userAddress: {
+  userAddress: {
     type: String,
     required: true,
   },
@@ -28,9 +28,12 @@ const properitySchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  tokenId: { type: String, default: null },
   isListed: {
     type: Boolean,
+    default: false,
   },
+  status: { type: String, default: "Pending" },
   createdAt: {
     type: Date,
     default: Date.now, // Sets default value to current date/time
