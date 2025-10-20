@@ -26,10 +26,10 @@ const AdminLogin = () => {
 
         // Check if wallet is contract owner
         const contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
-        const user = await contract.methods.loginUser(walletAddress).call();
+        const login = await contract.methods.loginUser(walletAddress).call();
+        const user = await contract.methods.getUserDetails(walletAddress).call();
         const admin = await contract.methods.owner().call();
-
-        if (!user || !(user === admin)) {
+        if (!login || user.walletAddress !== admin) {
           setError("Login failed! Not the admin wallet");
         } else {
           const userDetails = await contract.methods
