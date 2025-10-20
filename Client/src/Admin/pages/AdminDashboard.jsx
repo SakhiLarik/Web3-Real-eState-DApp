@@ -47,9 +47,11 @@ const AdminDashboard = () => {
 
         // Total pending requests
         const res = await axios.get(`${api}/admin/property/requests/${auth.user.wallet}`);
-        setTotalRequests(res.data.requests.length);
+        if(res.data.success){
+          setTotalRequests(res.data.requests.length);
+        }
       } catch (err) {
-        setError('Failed to fetch statistics'+err.message);
+        setError('Failed to fetch statistics '+err.message);
       }
     };
     fetchStats();

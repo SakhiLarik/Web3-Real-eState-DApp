@@ -266,8 +266,9 @@ router.get("/admin/property/requests/:wallet", async (req, res) => {
     }
 
     const owner = await contract.methods.owner().call();
+    
     if (wallet.toLowerCase() !== owner.toLowerCase()) {
-      return res.status(403).json({success:false, message: "Unauthorized - Not admin" });
+      return res.status(200).json({success:false, message: "Unauthorized - Not admin" });
     }
 
     const requests = await Property.find({ isListed: false, status:"Pending" });

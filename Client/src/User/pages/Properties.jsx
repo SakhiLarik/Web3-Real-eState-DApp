@@ -67,7 +67,7 @@ const Properties = () => {
         }
         setOwnedProperties(properties);
       } catch (err) {
-        setError('Failed to fetch owned properties');
+        setError('Failed to fetch owned properties: '+err.message);
       }
     };
     fetchOwnedProperties();
