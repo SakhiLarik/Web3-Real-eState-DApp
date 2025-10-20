@@ -78,7 +78,9 @@ router.post("/registerUser", async (req, res) => {
       $or: [{ email: email }, { walletAddress: walletAddress }],
     });
     if (existingUser) {
-      return res.status(200).json({success: false, message: "User already exists" });
+      return res
+        .status(200)
+        .json({ success: false, message: "User already exists" });
     }
 
     // Create new user
@@ -96,11 +98,10 @@ router.post("/registerUser", async (req, res) => {
       const blockchainUser = await contract.methods
         .registerUser(name, email, phone, password, walletAddress)
         .send(trx);
-        res
-          .status(200)
-          .json({ success: true, message: "User registered successfully", user });
+      res
+        .status(200)
+        .json({ success: true, message: "User registered successfully", user });
     }
-
   } catch (error) {
     res.status(500).json({ success: false, message: "Server error", error });
   }
@@ -115,10 +116,12 @@ router.post("/loginUser", async (req, res) => {
         .status(200)
         .json({ success: true, message: "Login successful", user });
     } else {
-      return res.status(200).json({success: true, message: "Invalid credentials" });
+      return res
+        .status(200)
+        .json({ success: true, message: "Invalid credentials" });
     }
   } catch (error) {
-    res.status(500).json({success: false, message: "Server error", error });
+    res.status(500).json({ success: false, message: "Server error", error });
   }
 });
 
@@ -149,7 +152,7 @@ router.post("/loginUserWeb3", async (req, res) => {
   } catch (error) {
     return res
       .status(200)
-      .json({success: false, message: "Wallet not registered on blockchain" });
+      .json({ success: false, message: "Wallet not registered on blockchain" });
   }
 });
 
@@ -170,23 +173,23 @@ router.get("/property/image/:tokenId", async (req, res) => {
 router.get("/user/:wallet", async (req, res) => {
   try {
     const requests = await User.find({ walletAddress: req.params.wallet });
-    res.status(200).json({success:true, user:requests });
+    res.status(200).json({ success: true, user: requests });
   } catch (error) {
     res.status(500).json({ message: "Server error", error });
   }
 });
 
-
 // Get User Property Requests
 router.get("/property/requests/:userAddress", async (req, res) => {
   try {
-    const requests = await Property.find({ userAddress: req.params.userAddress });
+    const requests = await Property.find({
+      userAddress: req.params.userAddress,
+    });
     res.status(200).json({ success: true, requests });
   } catch (error) {
-    res.status(200).json({success:false, message: "Server error", error });
+    res.status(200).json({ success: false, message: "Server error", error });
   }
 });
-
 
 // Create Property Mint Request (User)
 router.post(
@@ -197,8 +200,17 @@ router.post(
       const { title, location, price, description, userAddress } = req.body;
       const image = req.file?.filename;
 
-      if (!title || !location || !price || !userAddress || !description || !image) {
-        return res.status(200).json({ success:false, message: "Missing required fields" });
+      if (
+        !title ||
+        !location ||
+        !price ||
+        !userAddress ||
+        !description ||
+        !image
+      ) {
+        return res
+          .status(200)
+          .json({ success: false, message: "Missing required fields" });
       }
 
       const request = new Property({
@@ -212,9 +224,11 @@ router.post(
 
       await request.save();
 
-      res.status(201).json({ message: "Mint request created", requestId: request._id });
+      res
+        .status(201)
+        .json({ message: "Mint request created", requestId: request._id });
     } catch (error) {
-      res.status(200).json({ success: false, message: "Server error"+ error });
+      res.status(200).json({ success: false, message: "Server error" + error });
     }
   }
 );
@@ -240,11 +254,11 @@ router.get("/property/user/:userAddress", async (req, res) => {
             tokenId: i,
             title: details[0],
             location: details[1],
-            price: web3.utils.fromWei(details[2], 'ether'),
+            price: web3.utils.fromWei(details[2], "ether"),
             owner: details[3],
             isListed: details[4],
-            image: mongoProp?.image || '',
-            status: 'Owned', // Added for distinction
+            image: mongoProp?.image || "",
+            status: "Owned", // Added for distinction
           });
         }
       } catch {} // Skip invalid tokens
@@ -256,26 +270,34 @@ router.get("/property/user/:userAddress", async (req, res) => {
   }
 });
 
-
 // Get All Pending Mint Requests (Admin)
 router.get("/admin/property/requests/:wallet", async (req, res) => {
   try {
     const wallet = req.params.wallet;
     if (!wallet) {
-      return res.status(200).json({ success:false, message: "Wallet address required" });
+      return res
+        .status(200)
+        .json({ success: false, message: "Wallet address required" });
     }
 
     const owner = await contract.methods.owner().call();
-    
+
     if (wallet.toLowerCase() !== owner.toLowerCase()) {
-      return res.status(200).json({success:false, message: "Unauthorized - Not admin" });
+      return res
+        .status(200)
+        .json({ success: false, message: "Unauthorized - Not admin" });
     }
 
-    const requests = await Property.find({ isListed: false, status:"Pending" });
+    const requests = await Property.find({
+      isListed: false,
+      status: "Pending",
+    });
 
-    res.status(200).json({ success:true, requests });
+    res.status(200).json({ success: true, requests });
   } catch (error) {
-    res.status(200).json({ success:false, message: "Server error"+ error.message });
+    res
+      .status(200)
+      .json({ success: false, message: "Server error" + error.message });
   }
 });
 
@@ -284,39 +306,57 @@ router.post("/admin/property/approve/:requestId", async (req, res) => {
   try {
     const { wallet } = req.body;
     if (!wallet) {
-      return res.status(400).json({ success: false, message: "Wallet address required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Wallet address required" });
     }
 
     const owner = await contract.methods.owner().call();
     if (wallet.toLowerCase() !== owner.toLowerCase()) {
-      return res.status(403).json({ success: false, message: "Unauthorized - Not admin" });
+      return res
+        .status(403)
+        .json({ success: false, message: "Unauthorized - Not admin" });
     }
 
     const request = await Property.findById(req.params.requestId);
     if (request && !request.isListed) {
       // If there is a property and it is not listed yet
       // Mint on blockchain
-      const weiPrice = web3.utils.toWei(request.price.toString(), 'ether');
+      const weiPrice = web3.utils.toWei(request.price.toString(), "ether");
       const tx = await contract.methods
-        .mintProperty(request.userAddress, request.title, request.location, weiPrice)
+        .mintProperty(
+          request.userAddress,
+          request.title,
+          request.location,
+          weiPrice
+        )
         .send({ from: adminAccount, gas: 3000000 });
-  
+
       const tokenId = tx.events.PropertyMinted.returnValues.tokenId;
-  
+
       // Update MongoDB
       request.tokenId = tokenId.toString();
       request.isListed = true;
       request.status = "Approved";
       request.updatedAt = Date.now();
       await request.save();
-  
-      res.status(200).json({ success:true, message: "Request approved and minted", tokenId });
-    }else{
-      return res.status(400).json({success:false, message: "Invalid request" });
-    }
 
+      res
+        .status(200)
+        .json({
+          success: true,
+          message: "Request approved and minted",
+          tokenId,
+        });
+    } else {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid request" });
+    }
   } catch (error) {
-    res.status(500).json({ success:false, message: "Server error"+ error.message });
+    res
+      .status(500)
+      .json({ success: false, message: "Server error" + error.message });
   }
 });
 
@@ -325,12 +365,16 @@ router.post("/admin/property/reject/:requestId", async (req, res) => {
   try {
     const { wallet } = req.body;
     if (!wallet) {
-      return res.status(403).json({success:false, message: "Wallet address required" });
+      return res
+        .status(403)
+        .json({ success: false, message: "Wallet address required" });
     }
 
     const owner = await contract.methods.owner().call();
     if (wallet.toLowerCase() !== owner.toLowerCase()) {
-      return res.status(403).json({success:false, message: "Unauthorized - Not admin" });
+      return res
+        .status(403)
+        .json({ success: false, message: "Unauthorized - Not admin" });
     }
 
     const request = await Property.findById(req.params.requestId);
@@ -340,17 +384,103 @@ router.post("/admin/property/reject/:requestId", async (req, res) => {
       request.status = "Rejected";
       request.updatedAt = Date.now();
       await request.save();
-  
-      res.status(200).json({ success:true, message: "Request rejected" });
-    }else{
-      return res.status(200).json({success:false, message: "Invalid request" });
-    }
 
+      res.status(200).json({ success: true, message: "Request rejected" });
+    } else {
+      return res
+        .status(200)
+        .json({ success: false, message: "Invalid request" });
+    }
   } catch (error) {
-    res.status(500).json({ success:false, message: "Server error"+ error.message });
+    res
+      .status(500)
+      .json({ success: false, message: "Server error" + error.message });
   }
 });
 
+// Update and Delete the Property
+// Update Property Request (User - only for rejected)
+router.put(
+  "/property/request/:requestId",
+  uploadProperty.single("image"),
+  async (req, res) => {
+    try {
+      const { title, location, price, description, userAddress } = req.body;
+      const image = req.file?.filename;
+
+      const request = await Property.findById(req.params.requestId);
+      if (!request) {
+        return res
+          .status(200)
+          .json({ success: false, message: "Request not found" });
+      }
+
+      if (request.userAddress.toLowerCase() !== userAddress.toLowerCase()) {
+        return res
+          .status(200)
+          .json({ success: false, message: "Unauthorized - Not your request" });
+      }
+
+      if (request.status.toLowerCase() == "approved") {
+        return res
+          .status(200)
+          .json({
+            success: false,
+            message: "Can only update rejected or pending requests",
+          });
+      }
+
+      // Update fields if provided
+      if (title) request.title = title;
+      if (location) request.location = location;
+      if (price) request.price = parseFloat(price);
+      if (description) request.description = description;
+      if (image) request.image = image;
+
+      request.status = "pending";
+      request.updatedAt = Date.now();
+      await request.save();
+
+      res
+        .status(200)
+        .json({ success: true, message: "Request updated and resubmitted", request });
+    } catch (error) {
+      res.status(200).json({ success: false, message: "Server error", error });
+    }
+  }
+);
+
+// Delete Property Request (User - only for rejected or pending)
+router.delete("/property/request/:requestId", async (req, res) => {
+  try {
+    const { userAddress } = req.body;
+
+    const request = await Property.findById(req.params.requestId);
+    if (!request) {
+      return res
+        .status(200)
+        .json({ success: false, message: "Request not found" });
+    }
+
+    if (request.userAddress.toLowerCase() !== userAddress.toLowerCase()) {
+      return res
+        .status(200)
+        .json({ success: false, message: "Unauthorized - Not your request" });
+    }
+
+    if (request.status === "approved") {
+      return res
+        .status(200)
+        .json({ success: false, message: "Cannot delete approved requests" });
+    }
+
+    await Property.deleteOne({ _id: req.params.requestId });
+
+    res.status(200).json({ success: true, message: "Request deleted" });
+  } catch (error) {
+    res.status(200).json({ success: false, message: "Server error", error });
+  }
+});
 router.use(express.json());
 
 router.get("/", (req, res) => {
