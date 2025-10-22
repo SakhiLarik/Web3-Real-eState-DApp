@@ -233,8 +233,8 @@ router.post(
       await request.save();
 
       res
-        .status(201)
-        .json({ message: "Mint request created", requestId: request._id });
+        .status(200)
+        .json({  success: true, message: "Mint request created", requestId: request._id });
     } catch (error) {
       res.status(200).json({ success: false, message: "Server error" + error });
     }

@@ -155,6 +155,7 @@ const Properties = () => {
     } catch (err) {
       setError(err.response?.data?.message || "Network error");
     } finally {
+      setShowPopup(false);
       setLoading(false);
     }
   };
