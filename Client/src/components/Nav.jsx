@@ -1,5 +1,6 @@
 import React from "react";
 import { useAuth } from "../context/AuthContext";
+import AdminProfileDropdown from "./AdminProfileDropdown";
 import UserProfileDropdown from "./UserProfileDropdown";
 
 function Nav() {
@@ -43,9 +44,8 @@ function Nav() {
                 Login
               </a>
             </>
-          ) : (
-            <UserProfileDropdown />
-          )}
+          ) : auth.toke === 'user-token'?<UserProfileDropdown />: <AdminProfileDropdown />
+          }
         </div>
       </div>
     </nav>
