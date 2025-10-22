@@ -162,12 +162,12 @@ router.get("/property/image/:tokenId", async (req, res) => {
     const property = await Property.findOne({ tokenId: req.params.tokenId });
     if (property) {
       // return res.status(404).json({ message: "Property not found" });
-      res.status(200).json({ success:true, image: property.image });
+      res.status(200).json({ success: true, image: property.image });
     }
   } catch (error) {
-    console.log("ERRROR: "+error.message );
-    
-    res.status(500).json({ message: "Server error"+ error.message });
+    console.log("ERRROR: " + error.message);
+
+    res.status(500).json({ message: "Server error" + error.message });
   }
 });
 
@@ -226,9 +226,11 @@ router.post(
 
       await request.save();
 
-      res
-        .status(200)  
-        .json({  success: true, message: "Mint request created", requestId: request._id });
+      res.status(200).json({
+        success: true,
+        message: "Mint request created",
+        requestId: request._id,
+      });
     } catch (error) {
       res.status(200).json({ success: false, message: "Server error" + error });
     }
@@ -343,13 +345,11 @@ router.post("/admin/property/approve/:requestId", async (req, res) => {
       request.updatedAt = Date.now();
       await request.save();
 
-      res
-        .status(200)
-        .json({
-          success: true,
-          message: "Request approved and minted",
-          tokenId,
-        });
+      res.status(200).json({
+        success: true,
+        message: "Request approved and minted",
+        tokenId,
+      });
     } else {
       return res
         .status(400)
@@ -424,12 +424,10 @@ router.put(
       }
 
       if (request.status.toLowerCase() == "approved") {
-        return res
-          .status(200)
-          .json({
-            success: false,
-            message: "Can only update rejected or pending requests",
-          });
+        return res.status(200).json({
+          success: false,
+          message: "Can only update rejected or pending requests",
+        });
       }
 
       // Update fields if provided
@@ -443,9 +441,11 @@ router.put(
       request.updatedAt = Date.now();
       await request.save();
 
-      res
-        .status(200)
-        .json({ success: true, message: "Request updated and resubmitted", request });
+      res.status(200).json({
+        success: true,
+        message: "Request updated and resubmitted",
+        request,
+      });
     } catch (error) {
       res.status(200).json({ success: false, message: "Server error", error });
     }
@@ -484,7 +484,6 @@ router.delete("/property/request/:requestId", async (req, res) => {
   }
 });
 
-
 // List Property for Sale (User)
 router.post("/property/list/:tokenId", async (req, res) => {
   try {
@@ -497,13 +496,16 @@ router.post("/property/list/:tokenId", async (req, res) => {
     }
 
     // Check if already listed
-    const details = await contract.methods.getPropertyDetails(req.params.tokenId).call();
-    if (details[4]) { // isListed
+    const details = await contract.methods
+      .getPropertyDetails(req.params.tokenId)
+      .call();
+    if (details[4]) {
+      // isListed
       return res.status(400).json({ message: "Property already listed" });
     }
 
     // List on blockchain
-    const weiPrice = web3.utils.toWei(price.toString(), 'ether');
+    const weiPrice = web3.utils.toWei(price.toString(), "ether");
     await contract.methods
       .listPropertyForSale(req.params.tokenId, weiPrice)
       .send({ from: userAddress, gas: 3000000 });
@@ -531,16 +533,17 @@ router.get("/property/listed", async (req, res) => {
     for (let i = 1; i <= tokenCount; i++) {
       try {
         const details = await contract.methods.getPropertyDetails(i).call();
-        if (details[4]) { // isListed
+        if (details[4]) {
+          // isListed
           const mongoProp = await Property.findOne({ tokenId: i });
           listed.push({
             tokenId: i,
             title: details[0],
             location: details[1],
-            price: web3.utils.fromWei(details[2], 'ether'),
+            price: web3.utils.fromWei(details[2], "ether"),
             owner: details[3],
             isListed: details[4],
-            image: mongoProp?.image || '',
+            image: mongoProp?.image || "",
           });
         }
       } catch {} // Skip invalid tokens
@@ -552,33 +555,29 @@ router.get("/property/listed", async (req, res) => {
   }
 });
 
-
 // Get All Sellers
 router.get("/users/sellers", async (req, res) => {
   try {
     const tokenCount = await contract.methods.getTokenCounter().call();
-    const sellers = new Set();
+    const sellers = [];
 
     for (let i = 1; i <= tokenCount; i++) {
       try {
         const owner = await contract.methods.ownerOf(i).call();
-        sellers.add(owner.toLowerCase());
+        if (!sellers.includes(owner)) {
+          sellers.push(owner);
+        }
       } catch (e) {
         console.log(`Error fetching owner for token ${i}: ${e.message}`);
       }
     }
-
-    const sellerDetails = await User.find({
-      walletAddress: { $in: Array.from(sellers) },
-    }).select("name email walletAddress photo");
-
+    const sellerDetails = await User.find({ walletAddress: { $in: sellers } });
     res.status(200).json({ sellers: sellerDetails });
   } catch (error) {
-    console.error("Server error in /users/sellers:", error);
+    console.error("Server error in: ", error);
     res.status(500).json({ message: "Server error", error });
   }
 });
-
 
 // Get User's Requested and Owned Properties
 router.get("/property/user/:userAddress", async (req, res) => {
@@ -601,11 +600,11 @@ router.get("/property/user/:userAddress", async (req, res) => {
             tokenId: i,
             title: details[0],
             location: details[1],
-            price: web3.utils.fromWei(details[2], 'ether'),
+            price: web3.utils.fromWei(details[2], "ether"),
             owner: details[3],
             isListed: details[4],
-            image: mongoProp?.image || '',
-            status: 'owned',
+            image: mongoProp?.image || "",
+            status: "owned",
           });
         }
       } catch (e) {

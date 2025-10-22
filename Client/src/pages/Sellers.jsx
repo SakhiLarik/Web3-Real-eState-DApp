@@ -16,6 +16,9 @@ const Sellers = () => {
     const fetchSellers = async () => {
       try {
         const res = await axios.get(`${api}/users/sellers`);
+        console.log('====================================');
+        console.log(res.data.sellers);
+        console.log('====================================');
         setSellers(res.data.sellers);
       } catch (err) {
         setError('Failed to fetch sellers: ' + err.message);
@@ -30,7 +33,7 @@ const Sellers = () => {
     <div>
       <Nav />
       <div className="min-h-screen">
-        <div className="max-w-4xl mx-auto my-5 p-8 shadow">
+        <div className="max-w-7xl mx-auto my-5 p-8 shadow">
           <h1 className="text-3xl font-bold mb-4">All Sellers</h1>
           <hr />
           {error && <p className="text-red-500">{error}</p>}
@@ -39,7 +42,7 @@ const Sellers = () => {
           ) : sellers.length === 0 ? (
             <p>No sellers found.</p>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-4">
               {sellers.map(seller => (
                 <div
                   key={seller.walletAddress}
