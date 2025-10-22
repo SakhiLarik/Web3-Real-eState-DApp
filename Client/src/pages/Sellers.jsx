@@ -16,9 +16,6 @@ const Sellers = () => {
     const fetchSellers = async () => {
       try {
         const res = await axios.get(`${api}/users/sellers`);
-        console.log('====================================');
-        console.log(res.data.sellers);
-        console.log('====================================');
         setSellers(res.data.sellers);
       } catch (err) {
         setError('Failed to fetch sellers: ' + err.message);

@@ -11,6 +11,7 @@ import AdminDashboard from './Admin/pages/AdminDashboard';
 import PropertyRequests from './Admin/pages/PropertyRequests';
 import AllProperties from './pages/AllProperties';
 import Sellers from './pages/Sellers';
+import SellerDetails from './pages/SellerDetails';
 const App = () => {
   return (
     <Router>
@@ -30,7 +31,7 @@ const App = () => {
         <Route path="/" element={<Home />} />
         <Route path="/all_properties" element={<AllProperties />} />
         <Route path="/sellers" element={<Sellers />} />
-        <Route path="/seller/:walletAddress" element={<AllProperties />} />
+        <Route path="/seller/:walletAddress" element={<SellerDetails />} />
 
       </Routes>
     </Router>

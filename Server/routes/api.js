@@ -580,7 +580,7 @@ router.get("/users/sellers", async (req, res) => {
 });
 
 // Get User's Requested and Owned Properties
-router.get("/property/user/:userAddress", async (req, res) => {
+router.get("/properties/userAcount/:userAddress", async (req, res) => {
   try {
     const userAddress = req.params.userAddress;
 
@@ -614,7 +614,7 @@ router.get("/property/user/:userAddress", async (req, res) => {
 
     res.status(200).json({ requested, owned });
   } catch (error) {
-    console.error("Server error in /property/user/:userAddress:", error);
+    console.error("Server error in /properies/user/:userAddress:", error);
     res.status(500).json({ message: "Server error", error });
   }
 });
