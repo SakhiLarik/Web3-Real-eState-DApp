@@ -158,14 +158,22 @@ router.post("/loginUserWeb3", async (req, res) => {
 
 // Get Property Image
 router.get("/property/image/:tokenId", async (req, res) => {
+  console.log('====================================');
+  console.log(req.params.tokenId);
+  console.log('====================================');
   try {
     const property = await Property.findOne({ tokenId: req.params.tokenId });
-    if (!property) {
-      return res.status(404).json({ message: "Property not found" });
+    if (property) {
+      // return res.status(404).json({ message: "Property not found" });
+      res.status(200).json({ success:true, image: property.image });
     }
-    res.status(200).json({ image: property.image });
+    console.log('====================================');
+    console.log(property);
+    console.log('====================================');
   } catch (error) {
-    res.status(500).json({ message: "Server error", error });
+    console.log("ERRROR: "+error.message );
+    
+    res.status(500).json({ message: "Server error"+ error.message });
   }
 });
 
@@ -290,7 +298,7 @@ router.get("/admin/property/requests/:wallet", async (req, res) => {
 
     const requests = await Property.find({
       isListed: false,
-      status: "Pending",
+      status: "Pending".toLowerCase(),
     });
 
     res.status(200).json({ success: true, requests });
@@ -332,7 +340,7 @@ router.post("/admin/property/approve/:requestId", async (req, res) => {
         )
         .send({ from: adminAccount, gas: 3000000 });
 
-      const tokenId = tx.events.PropertyMinted.returnValues.tokenId;
+      const tokenId = tx.events.PropertyMinted.returnValues.tokenId.toString();
 
       // Update MongoDB
       request.tokenId = tokenId.toString();
@@ -481,6 +489,75 @@ router.delete("/property/request/:requestId", async (req, res) => {
     res.status(200).json({ success: false, message: "Server error", error });
   }
 });
+
+
+// List Property for Sale (User)
+router.post("/property/list/:tokenId", async (req, res) => {
+  try {
+    const { userAddress, price } = req.body;
+
+    // Validate user owns the property
+    const owner = await contract.methods.ownerOf(req.params.tokenId).call();
+    if (owner.toLowerCase() !== userAddress.toLowerCase()) {
+      return res.status(403).json({ message: "Unauthorized - Not the owner" });
+    }
+
+    // Check if already listed
+    const details = await contract.methods.getPropertyDetails(req.params.tokenId).call();
+    if (details[4]) { // isListed
+      return res.status(400).json({ message: "Property already listed" });
+    }
+
+    // List on blockchain
+    const weiPrice = web3.utils.toWei(price.toString(), 'ether');
+    await contract.methods
+      .listPropertyForSale(req.params.tokenId, weiPrice)
+      .send({ from: userAddress, gas: 3000000 });
+
+    // Update MongoDB
+    const mongoProp = await Property.findOne({ tokenId: req.params.tokenId });
+    if (mongoProp) {
+      mongoProp.isListed = true;
+      mongoProp.price = parseFloat(price);
+      mongoProp.updatedAt = Date.now();
+      await mongoProp.save();
+    }
+
+    res.status(200).json({ message: "Property listed for sale" });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error });
+  }
+});
+
+// Get All Listed Properties
+router.get("/property/listed", async (req, res) => {
+  try {
+    const tokenCount = await contract.methods.getTokenCounter().call();
+    const listed = [];
+    for (let i = 1; i <= tokenCount; i++) {
+      try {
+        const details = await contract.methods.getPropertyDetails(i).call();
+        if (details[4]) { // isListed
+          const mongoProp = await Property.findOne({ tokenId: i });
+          listed.push({
+            tokenId: i,
+            title: details[0],
+            location: details[1],
+            price: web3.utils.fromWei(details[2], 'ether'),
+            owner: details[3],
+            isListed: details[4],
+            image: mongoProp?.image || '',
+          });
+        }
+      } catch {} // Skip invalid tokens
+    }
+
+    res.status(200).json({ listed });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error });
+  }
+});
+
 router.use(express.json());
 
 router.get("/", (req, res) => {

@@ -8,7 +8,7 @@ import Footer from '../../components/Footer';
 import AuthCheck from '../../components/AuthCheck';
 
 const History = () => {
-  const { auth, mediumAddress } = useAuth();
+  const { auth, mediumAddress, copyText } = useAuth();
   const navigate = useNavigate();
   const [transactionHistory, setTransactionHistory] = useState([]);
   const [error, setError] = useState('');
@@ -95,9 +95,9 @@ const History = () => {
                     <td className="border p-2">{tx.eventName}</td>
                     <td className="border p-2">{tx.tokenId}</td>
                     <td className="border p-2">{tx.price}</td>
-                    <td className="border p-2">{mediumAddress(tx.from)}</td>
-                    <td className="border p-2">{mediumAddress(tx.to)}</td>
-                    <td className="border p-2">{mediumAddress(tx.transactionHash)}</td>
+                    <td className="border p-2">{mediumAddress(tx.from)} <i className='fa fas far fab fa-copy cursor-pointer ' onClick={()=>{copyText(tx.from)}}></i></td>
+                    <td className="border p-2">{mediumAddress(tx.to)} <i className='fa fas far fab fa-copy cursor-pointer ' onClick={()=>{copyText(tx.to)}}></i></td>
+                    <td className="border p-2">{mediumAddress(tx.transactionHash)} <i className='fa fas far  cursor-pointer fab fa-copy' onClick={()=>{copyText(tx.transactionHash)}}></i></td>
                   </tr>
                 ))}
               </tbody>

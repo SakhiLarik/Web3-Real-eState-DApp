@@ -9,11 +9,12 @@ import History from './User/pages/History';
 import AdminLogin from './Admin/pages/AdminLogin';
 import AdminDashboard from './Admin/pages/AdminDashboard';
 import PropertyRequests from './Admin/pages/PropertyRequests';
+import AllProperties from './pages/AllProperties';
 const App = () => {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Home />} />
+        {/* User Routes */}
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />} />
@@ -24,6 +25,10 @@ const App = () => {
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/admin/properties_requests" element={<PropertyRequests />} />
+        {/* Home Routes */}
+        <Route path="/" element={<Home />} />
+        <Route path="/all_properties" element={<AllProperties />} />
+
       </Routes>
     </Router>
   );

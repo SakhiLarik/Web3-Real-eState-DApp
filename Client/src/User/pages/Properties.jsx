@@ -61,19 +61,26 @@ const Properties = () => {
           const owner = await contract.methods.ownerOf(i).call();
           if (owner.toLowerCase() === auth.user?.wallet.toLowerCase()) {
             const details = await contract.methods.getPropertyDetails(i).call();
-            const imageRes = await axios.get(`${api}/property/image/${i}`);
-            properties.push({
-              tokenId: i,
-              title: details[0],
-              location: details[1],
-              price: web3.utils.fromWei(details[2], "ether"),
-              isListed: details[4],
-              image: imageRes.data.image || "",
-            });
+            if(details){
+              const imageRes = await axios.get(`${api}/property/image/${i}`);
+              console.log("Last Owned s: "+details[0]);
+              console.log("Last Owned TOKENID: "+i);
+              
+              properties.push({
+                tokenId: i,
+                title: details[0],
+                location: details[1],
+                price: web3.utils.fromWei(details[2], "ether"),
+                isListed: details[4],
+                image: imageRes.data.image || "",
+              });
+            }
           }
         }
         setOwnedProperties(properties);
       } catch (err) {
+        console.log("Failed to fetch owned properties: " + err.message);
+        
         setError("Failed to fetch owned properties: " + err.message);
       }
     };
@@ -152,7 +159,6 @@ const Properties = () => {
     }
   };
 
-  
   // Delete request
   const deleteRequest = async (requestId) => {
     setLoading(true);
@@ -176,6 +182,37 @@ const Properties = () => {
       }
     } catch (err) {
       setError(err.response?.data?.message || "Network error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  
+  // List property for sale
+  const listForSale = async (tokenId, price) => {
+    if (!price || price <= 0) {
+      setError('Please enter a valid price');
+      return;
+    }
+    setLoading(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      const response = await axios.post(`${api}/property/list/${tokenId}`, {
+        userAddress: auth.user.wallet,
+        price,
+      });
+      if (response.status === 200) {
+        setSuccess(`Property #${tokenId} listed for sale!`);
+        // Refresh owned properties
+        const res = await axios.get(`${api}/property/user/${auth.user.wallet}`);
+        setOwnedProperties(res.data.owned);
+      } else {
+        setError(response.data.message);
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to list property');
     } finally {
       setLoading(false);
     }
@@ -209,7 +246,7 @@ const Properties = () => {
       formData.append("description", listingForm.description);
     if (listingForm.image) formData.append("image", listingForm.image);
     formData.append("userAddress", auth.user.wallet);
- 
+
     try {
       const response = await axios.put(
         `${api}/property/request/${editRequestId}`,
@@ -219,7 +256,7 @@ const Properties = () => {
         }
       );
       console.log(response);
-      
+
       if (response.data.success) {
         setSuccess("Request updated and resubmitted!");
         setEditPopup(false);
@@ -236,25 +273,6 @@ const Properties = () => {
     }
   };
 
-
-  // List for sale
-  const listForSale = async (tokenId, price) => {
-    try {
-      const weiPrice = web3.utils.toWei(price.toString(), "ether");
-      await contract.methods
-        .listPropertyForSale(tokenId, weiPrice)
-        .send({ from: auth.user?.wallet });
-      setSuccess(`Property #${tokenId} listed for sale!`);
-      setOwnedProperties((prev) =>
-        prev.map((prop) =>
-          prop.tokenId === tokenId ? { ...prop, isListed: true, price } : prop
-        )
-      );
-    } catch (err) {
-      setError("Failed to list property");
-    }
-  };
-
   if (!auth.user) {
     navigate("/login");
     return null;
@@ -265,7 +283,7 @@ const Properties = () => {
       <AuthCheck />
       <Nav />
       <div className="min-h-screen">
-        <div className="max-w-4xl mx-auto my-5 p-8 shadow">
+        <div className="max-w-7xl mx-auto my-5 p-8 shadow">
           <h1 className="text-3xl font-bold mb-4">Your Properties</h1>
           <hr />
           {error && <p className="text-red-500">{error}</p>}
@@ -306,29 +324,23 @@ const Properties = () => {
                       {prop.isListed ? "Listed" : "Not Listed"}
                     </p>
                     {!prop.isListed && (
-                      <div className="mt-2">
-                        <input
-                          type="number"
-                          placeholder="Sale Price (ETH)"
-                          onChange={(e) => (prop.tempPrice = e.target.value)}
-                          className="border p-2 mr-2 rounded"
-                        />
-                        <button
-                          onClick={() =>
-                            listForSale(prop.tokenId, prop.tempPrice)
-                          }
-                          className="bg-blue-500 text-white p-2 rounded hover:bg-blue-700"
-                        >
-                          List for Sale
-                        </button>
-                      </div>
+                        <div className="mt-2">
+                          <input
+                            type="number"
+                            placeholder="Sale Price (ETH)"
+                            onChange={(e) => (prop.tempPrice = e.target.value)}
+                            className="border p-2 mr-2 rounded w-full"
+                          />
+                          <button
+                            onClick={() =>
+                              listForSale(prop.tokenId, prop.tempPrice)
+                            }
+                            className="bg-blue-500 my-2 px-4 text-white p-2 rounded hover:bg-blue-700"
+                          >
+                            List for Sale
+                          </button>
+                        </div>
                     )}
-                    <button
-                      onClick={() => navigate(`/property/${prop.tokenId}`)}
-                      className="mt-2 bg-gray-500 text-white p-2 rounded hover:bg-gray-700"
-                    >
-                      View Details
-                    </button>
                   </div>
                 ))}
               </div>
@@ -352,7 +364,7 @@ const Properties = () => {
             {requestedProperties.length === 0 ? (
               <p>No requests made.</p>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {requestedProperties.map((req, index) => (
                   <div key={index} className="border p-4 rounded shadow">
                     {req.image && (
