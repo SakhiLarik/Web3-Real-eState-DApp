@@ -22,7 +22,7 @@ function Nav() {
             Properties
           </a>
           <a
-            href="/all_sellers"
+            href="/sellers"
             className="px-6 text-white py-2.5 rounded hover:bg-blue-500 "
           >
             Sellers

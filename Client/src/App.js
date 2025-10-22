@@ -10,6 +10,7 @@ import AdminLogin from './Admin/pages/AdminLogin';
 import AdminDashboard from './Admin/pages/AdminDashboard';
 import PropertyRequests from './Admin/pages/PropertyRequests';
 import AllProperties from './pages/AllProperties';
+import Sellers from './pages/Sellers';
 const App = () => {
   return (
     <Router>
@@ -28,6 +29,8 @@ const App = () => {
         {/* Home Routes */}
         <Route path="/" element={<Home />} />
         <Route path="/all_properties" element={<AllProperties />} />
+        <Route path="/sellers" element={<Sellers />} />
+        <Route path="/seller/:walletAddress" element={<AllProperties />} />
 
       </Routes>
     </Router>

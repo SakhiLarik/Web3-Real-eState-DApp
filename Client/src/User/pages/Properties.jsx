@@ -61,16 +61,14 @@ const Properties = () => {
           const owner = await contract.methods.ownerOf(i).call();
           if (owner.toLowerCase() === auth.user?.wallet.toLowerCase()) {
             const details = await contract.methods.getPropertyDetails(i).call();
-            if(details){
+            if (details) {
               const imageRes = await axios.get(`${api}/property/image/${i}`);
-              console.log("Last Owned s: "+details[0]);
-              console.log("Last Owned TOKENID: "+i);
-              
               properties.push({
                 tokenId: i,
                 title: details[0],
                 location: details[1],
                 price: web3.utils.fromWei(details[2], "ether"),
+                owner: details[3],
                 isListed: details[4],
                 image: imageRes.data.image || "",
               });
@@ -80,15 +78,9 @@ const Properties = () => {
         setOwnedProperties(properties);
       } catch (err) {
         console.log("Failed to fetch owned properties: " + err.message);
-        
         setError("Failed to fetch owned properties: " + err.message);
       }
     };
-    fetchOwnedProperties();
-  }, [web3, contract, auth.user?.wallet, api]);
-
-  // Fetch requested properties
-  useEffect(() => {
     const fetchRequestedProperties = async () => {
       try {
         const res = await axios.get(
@@ -104,8 +96,9 @@ const Properties = () => {
         setError("Failed to fetch requested properties");
       }
     };
+    fetchOwnedProperties();
     fetchRequestedProperties();
-  }, [api, auth.user?.wallet]);
+  }, [web3, contract, auth.user?.wallet, api]);
 
   // Handle listing request form
   const handleListingChange = (e) => {
@@ -188,16 +181,15 @@ const Properties = () => {
     }
   };
 
-  
   // List property for sale
   const listForSale = async (tokenId, price) => {
     if (!price || price <= 0) {
-      setError('Please enter a valid price');
+      setError("Please enter a valid price");
       return;
     }
     setLoading(true);
-    setError('');
-    setSuccess('');
+    setError("");
+    setSuccess("");
 
     try {
       const response = await axios.post(`${api}/property/list/${tokenId}`, {
@@ -213,7 +205,7 @@ const Properties = () => {
         setError(response.data.message);
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to list property');
+      setError(err.response?.data?.message || "Failed to list property");
     } finally {
       setLoading(false);
     }
@@ -292,13 +284,13 @@ const Properties = () => {
 
           {/* Owned Properties */}
           <div className="mb-8">
-            <h2 className="text-2xl text-secondary font-semibold mb-2">
+            <h2 className="text-2xl text-secondary font-semibold my-4">
               Owned Properties
             </h2>
             {ownedProperties.length === 0 ? (
               <p>No owned properties.</p>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {ownedProperties.map((prop) => (
                   <div key={prop.tokenId} className="border p-4 rounded shadow">
                     {prop.image && (
@@ -325,22 +317,25 @@ const Properties = () => {
                       {prop.isListed ? "Listed" : "Not Listed"}
                     </p>
                     {!prop.isListed && (
-                        <div className="mt-2">
-                          <input
-                            type="number"
-                            placeholder="Sale Price (ETH)"
-                            onChange={(e) => (prop.tempPrice = e.target.value)}
-                            className="border p-2 mr-2 rounded w-full"
-                          />
-                          <button
-                            onClick={() =>
-                              listForSale(prop.tokenId, prop.tempPrice)
-                            }
-                            className="bg-blue-500 my-2 px-4 text-white p-2 rounded hover:bg-blue-700"
-                          >
-                            List for Sale
-                          </button>
-                        </div>
+                      <div className="mt-2">
+                        <input
+                          type="number"
+                          placeholder="Sale Price (ETH)"
+                          onChange={(e) => (prop.tempPrice = e.target.value)}
+                          className="border p-2 mr-2 rounded"
+                          min="0"
+                          step="0.01"
+                        />
+                        <button
+                          onClick={() =>
+                            listForSale(prop.tokenId, prop.tempPrice)
+                          }
+                          disabled={loading}
+                          className="bg-blue-500 text-white p-2 rounded hover:bg-blue-700"
+                        >
+                          List for Sale
+                        </button>
+                      </div>
                     )}
                   </div>
                 ))}

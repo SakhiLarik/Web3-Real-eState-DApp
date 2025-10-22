@@ -30,18 +30,29 @@ const Login = () => {
         const accounts = await web3.eth.getAccounts();
         const walletAddress = accounts[0];
         setWallet(walletAddress);
-        const res = await axios.post(`${api}/loginUserWeb3`, {walletAddress:walletAddress} ,{
-          headers:{
-            "Content-Type":"application/json",
-          },
-        });
+        const res = await axios.post(
+          `${api}/loginUserWeb3`,
+          { walletAddress: walletAddress },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        console.log("====================================");
+        console.log(res.data);
+        console.log("====================================");
         const user = res.data.user;
-        if (user && walletAddress.toLowerCase() === user.walletAddress.toLowerCase()) {
-          allowUserLogin({ user });
-          setSuccess("Login successful! Redirecting...");
-          navigate("/dashboard");
+        if (res.data.success) {
+          if (user) {
+            allowUserLogin({ user });
+            setSuccess("Login successful! Redirecting...");
+            navigate("/dashboard");
+          } else {
+            setError("Sorry your account is not registerd!");
+          }
         } else {
-          setError("Sorry your account is not registerd!");
+          setError(res.data.message);
         }
       } catch (err) {
         setError("Failed to login with wallet, try again");

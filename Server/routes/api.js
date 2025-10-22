@@ -118,7 +118,7 @@ router.post("/loginUser", async (req, res) => {
     } else {
       return res
         .status(200)
-        .json({ success: true, message: "Invalid credentials" });
+        .json({ success: false, message: "Invalid credentials" });
     }
   } catch (error) {
     res.status(500).json({ success: false, message: "Server error", error });
@@ -158,18 +158,12 @@ router.post("/loginUserWeb3", async (req, res) => {
 
 // Get Property Image
 router.get("/property/image/:tokenId", async (req, res) => {
-  console.log('====================================');
-  console.log(req.params.tokenId);
-  console.log('====================================');
   try {
     const property = await Property.findOne({ tokenId: req.params.tokenId });
     if (property) {
       // return res.status(404).json({ message: "Property not found" });
       res.status(200).json({ success:true, image: property.image });
     }
-    console.log('====================================');
-    console.log(property);
-    console.log('====================================');
   } catch (error) {
     console.log("ERRROR: "+error.message );
     
@@ -233,7 +227,7 @@ router.post(
       await request.save();
 
       res
-        .status(200)
+        .status(200)  
         .json({  success: true, message: "Mint request created", requestId: request._id });
     } catch (error) {
       res.status(200).json({ success: false, message: "Server error" + error });
@@ -298,7 +292,7 @@ router.get("/admin/property/requests/:wallet", async (req, res) => {
 
     const requests = await Property.find({
       isListed: false,
-      status: "Pending".toLowerCase(),
+      status: "Pending",
     });
 
     res.status(200).json({ success: true, requests });
@@ -554,6 +548,74 @@ router.get("/property/listed", async (req, res) => {
 
     res.status(200).json({ listed });
   } catch (error) {
+    res.status(500).json({ message: "Server error", error });
+  }
+});
+
+
+// Get All Sellers
+router.get("/users/sellers", async (req, res) => {
+  try {
+    const tokenCount = await contract.methods.getTokenCounter().call();
+    const sellers = new Set();
+
+    for (let i = 1; i <= tokenCount; i++) {
+      try {
+        const owner = await contract.methods.ownerOf(i).call();
+        sellers.add(owner.toLowerCase());
+      } catch (e) {
+        console.log(`Error fetching owner for token ${i}: ${e.message}`);
+      }
+    }
+
+    const sellerDetails = await User.find({
+      walletAddress: { $in: Array.from(sellers) },
+    }).select("name email walletAddress photo");
+
+    res.status(200).json({ sellers: sellerDetails });
+  } catch (error) {
+    console.error("Server error in /users/sellers:", error);
+    res.status(500).json({ message: "Server error", error });
+  }
+});
+
+
+// Get User's Requested and Owned Properties
+router.get("/property/user/:userAddress", async (req, res) => {
+  try {
+    const userAddress = req.params.userAddress;
+
+    // Requested properties from MongoDB
+    const requested = await Property.find({ userAddress });
+
+    // Owned properties from blockchain
+    const tokenCount = await contract.methods.getTokenCounter().call();
+    const owned = [];
+    for (let i = 1; i <= tokenCount; i++) {
+      try {
+        const owner = await contract.methods.ownerOf(i).call();
+        if (owner.toLowerCase() === userAddress.toLowerCase()) {
+          const details = await contract.methods.getPropertyDetails(i).call();
+          const mongoProp = await Property.findOne({ tokenId: i });
+          owned.push({
+            tokenId: i,
+            title: details[0],
+            location: details[1],
+            price: web3.utils.fromWei(details[2], 'ether'),
+            owner: details[3],
+            isListed: details[4],
+            image: mongoProp?.image || '',
+            status: 'owned',
+          });
+        }
+      } catch (e) {
+        console.log(`Error fetching token ${i}: ${e.message}`);
+      }
+    }
+
+    res.status(200).json({ requested, owned });
+  } catch (error) {
+    console.error("Server error in /property/user/:userAddress:", error);
     res.status(500).json({ message: "Server error", error });
   }
 });
