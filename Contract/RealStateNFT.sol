@@ -192,11 +192,11 @@ contract RealEstateNFT is ERC721, Ownable {
         );
 
         address seller = ownerOf(tokenId);
+        payable(seller).transfer(msg.value);
         properties[tokenId].isListed = false;
         properties[tokenId].owner = msg.sender;
 
         _transfer(seller, msg.sender, tokenId);
-        payable(seller).transfer(msg.value);
 
         emit PropertySold(tokenId, msg.sender, seller, msg.value);
     }

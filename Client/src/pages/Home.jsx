@@ -17,13 +17,13 @@ function Home() {
           </p>
           <br />
           <a
-            href="listings.html"
+            href="/all_properties/"
             className="bg-blue-500 mx-3 text-white px-6 py-3 rounded hover:bg-blue-600"
           >
             Explore Properties
           </a>
           <a
-            href="listings.html"
+            href="/sellers/"
             className="bg-blue-500 mx-3 text-white px-6 py-3 rounded hover:bg-blue-600"
           >
             Explore Sellers

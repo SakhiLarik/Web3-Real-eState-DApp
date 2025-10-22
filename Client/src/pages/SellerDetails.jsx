@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import Web3 from 'web3';
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
-import { ABI, CONTRACT_ADDRESS } from '../config'
+import { CONTRACT_ABI, CONTRACT_ADDRESS } from '../config'
 import Nav from "../components/Nav";
 import Footer from "../components/Footer";
 
@@ -24,7 +24,7 @@ const SellerDetails = () => {
       try {
         const web3Instance = new Web3(window.ethereum || 'http://127.0.0.1:7545');
         await window.ethereum?.request({ method: 'eth_requestAccounts' });
-        const contractInstance = new web3Instance.eth.Contract(ABI, CONTRACT_ADDRESS);
+        const contractInstance = new web3Instance.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
         setWeb3(web3Instance);
         setContract(contractInstance);
       } catch (err) {
@@ -132,7 +132,7 @@ const SellerDetails = () => {
                     <button
                       onClick={() => buyProperty(prop.tokenId, prop.price)}
                       disabled={loading}
-                      className="mt-2 bg-green-500 text-white p-2 rounded hover:bg-green-700"
+                      className="mt-2 px-4 bg-green-500 text-white p-2 rounded hover:bg-green-700"
                     >
                       {loading ? 'Buying...' : 'Buy Now'}
                     </button>
