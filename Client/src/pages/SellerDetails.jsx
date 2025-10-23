@@ -68,11 +68,10 @@ const SellerDetails = () => {
     setLoading(true);
     setError('');
     try {
-      const accounts = await web3.eth.getAccounts();
       const weiPrice = web3.utils.toWei(price.toString(), 'ether');
 
       await contract.methods.buyProperty(tokenId)
-        .send({ from: accounts[0], value: weiPrice, gas: 3000000 });
+        .send({ from: auth.user.wallet, value: weiPrice, gas: 3000000 });
 
       // Refresh properties after purchase
       const res = await axios.get(`${api}/property/user/${walletAddress}`);

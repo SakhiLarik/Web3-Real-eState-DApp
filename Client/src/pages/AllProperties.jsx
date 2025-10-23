@@ -26,12 +26,10 @@ const AllProperties = () => {
     setLoading(true);
     setError("");
     try {
-      const accounts = await web3.eth.getAccounts();
       const weiPrice = web3.utils.toWei(price.toString(), "ether");
-
       await contract.methods
         .buyProperty(tokenId)
-        .send({ from: accounts[0], value: weiPrice, gas: 3000000 });
+        .send({ from: auth.user.wallet, value: weiPrice, gas: 3000000 });
 
       setSuccess(`Property #${tokenId} purchased successfully!`);
     } catch (err) {

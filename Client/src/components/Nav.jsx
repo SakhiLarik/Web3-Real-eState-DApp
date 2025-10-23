@@ -44,7 +44,7 @@ function Nav() {
                 Login
               </a>
             </>
-          ) : auth.toke === 'user-token'?<UserProfileDropdown />: <AdminProfileDropdown />
+          ) : auth.token === 'user-token'?<UserProfileDropdown />: <AdminProfileDropdown />
           }
         </div>
       </div>
