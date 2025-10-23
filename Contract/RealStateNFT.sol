@@ -180,27 +180,26 @@ contract RealEstateNFT is ERC721, Ownable {
         emit PropertyListed(tokenId, price, msg.sender);
     }
 
-    function buyProperty(uint256 tokenId) public payable {
+   function buyProperty(uint256 tokenId) public payable nonReentrant {
         require(ownerOf(tokenId) != address(0), "Token does not exist");
-        require(
-            properties[tokenId].isListed,
-            "Property is not listed for sale"
-        );
-        require(
-            msg.value == properties[tokenId].price,
-            "Please send the exact asking price"
-        );
+        require(properties[tokenId].isListed, "Property is not listed for sale");
+        require(msg.value == properties[tokenId].price, "Please send the exact asking price");
 
         address seller = ownerOf(tokenId);
-        payable(seller).transfer(msg.value);
+
+        // Transfer ownership first
+        _transfer(seller, msg.sender, tokenId);
+
+        // Use call.value() with gas to avoid 2300 gas limit
+        (bool sent, ) = payable(seller).call{value: msg.value}("");
+        require(sent, "Failed to send Ether to seller");
+
+        // Update state after successful transfer
         properties[tokenId].isListed = false;
         properties[tokenId].owner = msg.sender;
 
-        _transfer(seller, msg.sender, tokenId);
-
-        emit PropertySold(tokenId, msg.sender, seller, msg.value);
+        emit PropertySold(tokenId, seller, msg.sender, msg.value);
     }
-
     function getPropertyDetails(uint256 tokenId)
         public
         view
