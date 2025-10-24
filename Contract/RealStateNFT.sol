@@ -168,7 +168,7 @@ contract RealEstateNFT is ERC721, Ownable, ReentrancyGuard { // ADD ReentrancyGu
     function buyProperty(uint256 tokenId) public payable nonReentrant {
         require(ownerOf(tokenId) != address(0), "Token does not exist");
         require(properties[tokenId].isListed, "Property is not listed for sale");
-        require(msg.value == properties[tokenId].price, "Please send the exact asking price");
+        require(msg.value >= properties[tokenId].price, "Please send the exact asking price");
         
         address seller = ownerOf(tokenId);
         require(msg.sender != seller, "Cannot buy your own property"); // ADD THIS CHECK

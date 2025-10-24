@@ -9,80 +9,189 @@ import { CONTRACT_ABI, CONTRACT_ADDRESS } from "../config";
 
 const AllProperties = () => {
   const { auth, api, mediumAddress } = useAuth();
-  const navigate = useNavigate();
-  const [listedProperties, setListedProperties] = useState([]);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [web3, setWeb3] = useState(null);
-  const [contract, setContract] = useState(null);
+const navigate = useNavigate();
+const [listedProperties, setListedProperties] = useState([]);
+const [error, setError] = useState("");
+const [success, setSuccess] = useState("");
+const [loading, setLoading] = useState(false);
+const [web3, setWeb3] = useState(null);
+const [contract, setContract] = useState(null);
 
-  const buyProperty = async (tokenId) => {
-    if (!auth.user) {
-      navigate("/login");
-      return;
+const buyProperty = async (tokenId) => {
+  if (!auth.user) {
+    navigate("/login");
+    return;
+  }
+
+  // Check if web3 and contract are initialized
+  if (!web3 || !contract) {
+    setError("Web3 not initialized. Please refresh the page.");
+    return;
+  }
+
+  setLoading(true);
+  setError("");
+  setSuccess(""); // Clear previous success messages
+  
+  try {
+    // Verify MetaMask connection
+    if (!window.ethereum) {
+      throw new Error("MetaMask is not installed");
     }
 
-    setLoading(true);
-    setError("");
+    // Request accounts to ensure connection is active
+    const accounts = await window.ethereum.request({ 
+      method: 'eth_requestAccounts' 
+    });
+    
+    if (accounts.length === 0 || accounts[0].toLowerCase() !== auth.user.wallet.toLowerCase()) {
+      throw new Error("Please connect the correct MetaMask account");
+    }
+
+    console.log("Fetching property details for token:", tokenId);
+    
+    // Get property details from contract
+    const property = await contract.methods.properties(tokenId).call();
+    
+    console.log("Property details:", {
+      price: property.price,
+      priceInEth: web3.utils.fromWei(property.price, "ether"),
+      isListed: property.isListed,
+      owner: property.owner
+    });
+
+    // Verify property is listed
+    if (!property.isListed) {
+      throw new Error("Property is not listed for sale");
+    }
+
+    // Check if trying to buy own property
+    const currentOwner = await contract.methods.ownerOf(tokenId).call();
+    if (currentOwner.toLowerCase() === auth.user.wallet.toLowerCase()) {
+      throw new Error("You cannot buy your own property");
+    }
+
+    console.log("Sending transaction...");
+    
+    // Send the transaction
+    const receipt = await contract.methods.buyProperty(tokenId).send({
+      from: auth.user.wallet,
+      value: property.price,
+      gas: 500000,
+    });
+
+    console.log("Transaction successful:", receipt);
+    setSuccess(`Property #${tokenId} purchased successfully!`);
+    
+    // Refresh the property list after successful purchase
+    fetchListedProperties();
+    
+  } catch (err) {
+    console.error("Full error:", err);
+    
+    // Better error messages
+    let errorMessage = err.message;
+    
+    if (err.message.includes("User denied")) {
+      errorMessage = "Transaction was rejected";
+    } else if (err.message.includes("insufficient funds")) {
+      errorMessage = "Insufficient funds in your wallet";
+    } else if (err.message.includes("connection")) {
+      errorMessage = "Lost connection to MetaMask. Please refresh and try again.";
+    }
+    
+    setError("Failed to buy property: " + errorMessage);
+  } finally {
+    setLoading(false);
+  }
+};
+
+// Separate function to fetch properties
+const fetchListedProperties = async () => {
+  setLoading(true);
+  try {
+    const res = await axios.get(`${api}/property/listed`);
+    setListedProperties(res.data.listed);
+  } catch (err) {
+    console.error("Error fetching properties:", err);
+    setError("Failed to fetch listed properties");
+  } finally {
+    setLoading(false);
+  }
+};
+
+// Initialize Web3 once when component mounts
+useEffect(() => {
+  const initWeb3 = async () => {
     try {
-      // Get the ACTUAL price from the contract
-      const property = await contract.methods.properties(tokenId).call();
+      // Check if MetaMask is installed
+      if (!window.ethereum) {
+        setError("Please install MetaMask to use this feature");
+        return;
+      }
 
-      // console.log("Property price from contract:", property.price);
-      // console.log("Property price in ETH:", web3.utils.fromWei(property.price, "ether"));
-      // const weiPrice = web3.utils.toWei(property.price.toString(), "ether");
-
-      // Use the exact price from the contract
-      const receipt = await contract.methods.buyProperty(tokenId).send({
-        from: auth.user.wallet,
-        value: property.price, // Use the EXACT price from contract (in Wei)
-        gas: 500000,
+      console.log("Initializing Web3...");
+      
+      // Create Web3 instance
+      const web3Instance = new Web3(window.ethereum);
+      
+      // Request account access
+      const accounts = await window.ethereum.request({ 
+        method: "eth_requestAccounts" 
       });
-
-      console.log("Transaction receipt:", receipt);
-      setSuccess(`Property #${tokenId} purchased successfully!`);
+      
+      console.log("Connected accounts:", accounts);
+      
+      // Get network info
+      const chainId = await web3Instance.eth.getChainId();
+      console.log("Connected to chain ID:", chainId);
+      
+      // Initialize contract
+      const contractInstance = new web3Instance.eth.Contract(
+        CONTRACT_ABI,
+        CONTRACT_ADDRESS
+      );
+      
+      console.log("Contract initialized at:", CONTRACT_ADDRESS);
+      
+      setWeb3(web3Instance);
+      setContract(contractInstance);
+      
     } catch (err) {
-      console.error("Error:", err);
-      setError("Failed to buy property: " + err.message);
-    } finally {
-      setLoading(false);
+      console.error("Web3 initialization error:", err);
+      setError("Failed to initialize Web3: " + err.message);
     }
   };
 
-  // Fetch all listed properties
-  useEffect(() => {
-    const initWeb3 = async () => {
-      try {
-        const web3Instance = new Web3(
-          window.ethereum || "http://127.0.0.1:7545"
-        );
-        await window.ethereum?.request({ method: "eth_requestAccounts" });
-        const contractInstance = new web3Instance.eth.Contract(
-          CONTRACT_ABI,
-          CONTRACT_ADDRESS
-        );
-        setWeb3(web3Instance);
-        setContract(contractInstance);
-      } catch (err) {
-        setError("Failed to initialize Web3");
+  initWeb3();
+  fetchListedProperties();
+  
+  // Listen for account changes
+  if (window.ethereum) {
+    window.ethereum.on('accountsChanged', (accounts) => {
+      console.log("Account changed:", accounts);
+      if (accounts.length === 0) {
+        setError("Please connect to MetaMask");
+      } else {
+        // Optionally reload the page or update state
+        window.location.reload();
       }
-    };
-    initWeb3();
+    });
 
-    const fetchListedProperties = async () => {
-      setLoading(true);
-      try {
-        const res = await axios.get(`${api}/property/listed`);
-        setListedProperties(res.data.listed);
-      } catch (err) {
-        setError("Failed to fetch listed properties");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchListedProperties();
-  }, [api]);
+    window.ethereum.on('chainChanged', () => {
+      console.log("Chain changed, reloading...");
+      window.location.reload();
+    });
+  }
+
+  // Cleanup listeners on unmount
+  return () => {
+    if (window.ethereum) {
+      window.ethereum.removeAllListeners('accountsChanged');
+      window.ethereum.removeAllListeners('chainChanged');
+    }
+  };
+}, [api]); // Only re-run if api changes
 
   return (
     <div>
