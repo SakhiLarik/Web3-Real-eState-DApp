@@ -31,12 +31,12 @@ const AllProperties = () => {
 
       // console.log("Property price from contract:", property.price);
       // console.log("Property price in ETH:", web3.utils.fromWei(property.price, "ether"));
-      const weiPrice = web3.utils.toWei(property.price.toString(), "ether");
+      // const weiPrice = web3.utils.toWei(property.price.toString(), "ether");
 
       // Use the exact price from the contract
       const receipt = await contract.methods.buyProperty(tokenId).send({
         from: auth.user.wallet,
-        value: weiPrice, // Use the EXACT price from contract (in Wei)
+        value: property.price, // Use the EXACT price from contract (in Wei)
         gas: 500000,
       });
 

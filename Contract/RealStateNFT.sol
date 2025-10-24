@@ -3,20 +3,19 @@ pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol"; // ADD THIS
 
-contract RealEstateNFT is ERC721, Ownable {
+contract RealEstateNFT is ERC721, Ownable, ReentrancyGuard { // ADD ReentrancyGuard
     uint256 public _tokenIdCounter;
 
-    // Struct to store property details on-chain
     struct Property {
-        string title; // e.g., "Modern Apartment"
-        string location; // e.g., "Downtown, New York"
-        uint256 price; // Price in wei
-        address owner; // Current owner of the property
-        bool isListed; // Is the property listed for sale?
+        string title;
+        string location;
+        uint256 price;
+        address owner;
+        bool isListed;
     }
 
-    // Mapping from token ID to property details
     mapping(uint256 => Property) public properties;
 
     struct User {
@@ -28,12 +27,9 @@ contract RealEstateNFT is ERC721, Ownable {
     }
 
     mapping(uint256 => User) public users;
-
     uint256 public userIdCounter = 1;
-
     address[] public registeredAddresses;
 
-    // Events for marketplace actions
     event PropertyMinted(
         uint256 indexed tokenId,
         address owner,
@@ -55,7 +51,6 @@ contract RealEstateNFT is ERC721, Ownable {
 
     constructor() ERC721("RealEstateNFT", "RENFT") Ownable(msg.sender) {
         _tokenIdCounter = 0;
-        // Push owner address as registerd address
         registeredAddresses.push(msg.sender);
         uint256 newUserID = userIdCounter;
         users[newUserID] = User({
@@ -68,7 +63,6 @@ contract RealEstateNFT is ERC721, Ownable {
         userIdCounter++;
     }
 
-    // Register user
     function registerUser(
         string memory name,
         string memory email,
@@ -76,7 +70,6 @@ contract RealEstateNFT is ERC721, Ownable {
         string memory password,
         address walletAddress
     ) public returns (User memory) {
-        // Check if wallet is already registered
         for (uint256 i = 0; i < registeredAddresses.length; i++) {
             if (registeredAddresses[i] == walletAddress) {
                 revert("Wallet address already registered");
@@ -94,12 +87,8 @@ contract RealEstateNFT is ERC721, Ownable {
         userIdCounter++;
         return users[newUserID];
     }
-    // Login user with wallet address only
-    function loginUser(address walletAddress)
-        public
-        view
-        returns (bool)
-    {
+
+    function loginUser(address walletAddress) public view returns (bool) {
         for (uint256 i = 0; i < registeredAddresses.length; i++) {
             if (registeredAddresses[i] == walletAddress) {
                 return true;
@@ -108,7 +97,6 @@ contract RealEstateNFT is ERC721, Ownable {
         return false;
     }
 
-    // Get user details
     function getUserDetails(address walletAddress)
         public
         view
@@ -122,7 +110,6 @@ contract RealEstateNFT is ERC721, Ownable {
         revert("User not found");
     }
 
-    // Get all registered users
     function getAllUsers() public view returns (User[] memory) {
         User[] memory allUsers = new User[](registeredAddresses.length);
         for (uint256 i = 0; i < registeredAddresses.length; i++) {
@@ -131,12 +118,10 @@ contract RealEstateNFT is ERC721, Ownable {
         return allUsers;
     }
 
-    // Get user count
     function getUserCount() public view returns (uint256) {
         return registeredAddresses.length;
     }
 
-    // Update user wallet address
     function updateUserWalletAddress(uint256 userID, address newWalletAddress)
         public
     {
@@ -180,17 +165,18 @@ contract RealEstateNFT is ERC721, Ownable {
         emit PropertyListed(tokenId, price, msg.sender);
     }
 
-   function buyProperty(uint256 tokenId) public payable nonReentrant {
+    function buyProperty(uint256 tokenId) public payable nonReentrant {
         require(ownerOf(tokenId) != address(0), "Token does not exist");
         require(properties[tokenId].isListed, "Property is not listed for sale");
         require(msg.value == properties[tokenId].price, "Please send the exact asking price");
-
+        
         address seller = ownerOf(tokenId);
+        require(msg.sender != seller, "Cannot buy your own property"); // ADD THIS CHECK
 
         // Transfer ownership first
         _transfer(seller, msg.sender, tokenId);
 
-        // Use call.value() with gas to avoid 2300 gas limit
+        // Send payment to seller
         (bool sent, ) = payable(seller).call{value: msg.value}("");
         require(sent, "Failed to send Ether to seller");
 
@@ -198,8 +184,10 @@ contract RealEstateNFT is ERC721, Ownable {
         properties[tokenId].isListed = false;
         properties[tokenId].owner = msg.sender;
 
-        emit PropertySold(tokenId, seller, msg.sender, msg.value);
+        // FIX: Correct parameter order (buyer, seller, not seller, buyer)
+        emit PropertySold(tokenId, msg.sender, seller, msg.value);
     }
+
     function getPropertyDetails(uint256 tokenId)
         public
         view
