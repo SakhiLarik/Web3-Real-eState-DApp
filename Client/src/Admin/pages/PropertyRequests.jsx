@@ -48,14 +48,14 @@ const PropertyRequests = () => {
         );
         // Refresh requests
         const res = await axios.get(
-          `${api}/admin/property/requests?wallet=${auth.user.wallet}`
+          `${api}/admin/property/requests/${auth.user.wallet}`
         );
         setRequests(res.data.requests);
       } else {
         setError(response.data.message);
       }
     } catch (err) {
-      setError(err.response?.data?.message || "Approval failed");
+      setError("Approval failed"+err.message);
     } finally {
       setLoading(false);
     }

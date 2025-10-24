@@ -17,7 +17,7 @@ const AllProperties = () => {
   const [web3, setWeb3] = useState(null);
   const [contract, setContract] = useState(null);
 
-  const buyProperty = async (tokenId, price) => {
+  const buyProperty = async (tokenId) => {
     if (!auth.user) {
       navigate("/login");
       return;
@@ -26,13 +26,24 @@ const AllProperties = () => {
     setLoading(true);
     setError("");
     try {
-      const weiPrice = web3.utils.toWei(price.toString(), "ether");
-      await contract.methods
-        .buyProperty(tokenId)
-        .send({ from: auth.user.wallet, value: weiPrice, gas: 3000000 });
+      // Get the ACTUAL price from the contract
+      const property = await contract.methods.properties(tokenId).call();
 
+      // console.log("Property price from contract:", property.price);
+      // console.log("Property price in ETH:", web3.utils.fromWei(property.price, "ether"));
+      const weiPrice = web3.utils.toWei(property.price.toString(), "ether");
+
+      // Use the exact price from the contract
+      const receipt = await contract.methods.buyProperty(tokenId).send({
+        from: auth.user.wallet,
+        value: weiPrice, // Use the EXACT price from contract (in Wei)
+        gas: 500000,
+      });
+
+      console.log("Transaction receipt:", receipt);
       setSuccess(`Property #${tokenId} purchased successfully!`);
     } catch (err) {
+      console.error("Error:", err);
       setError("Failed to buy property: " + err.message);
     } finally {
       setLoading(false);
@@ -116,7 +127,7 @@ const AllProperties = () => {
                     auth.user.wallet.toLowerCase() !==
                       prop.owner.toLowerCase() && (
                       <button
-                        onClick={() => buyProperty(prop.tokenId, prop.price)}
+                        onClick={() => buyProperty(prop.tokenId)}
                         disabled={loading}
                         className="mt-2 px-4 bg-green-500 text-white p-2 rounded hover:bg-green-700"
                       >
