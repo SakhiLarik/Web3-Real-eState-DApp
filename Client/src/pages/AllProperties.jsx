@@ -34,20 +34,6 @@ const buyProperty = async (tokenId) => {
   setSuccess(""); // Clear previous success messages
   
   try {
-    // Verify MetaMask connection
-    if (!window.ethereum) {
-      throw new Error("MetaMask is not installed");
-    }
-
-    // Request accounts to ensure connection is active
-    const accounts = await window.ethereum.request({ 
-      method: 'eth_requestAccounts' 
-    });
-    
-    if (accounts.length === 0 || accounts[0].toLowerCase() !== auth.user.wallet.toLowerCase()) {
-      throw new Error("Please connect the correct MetaMask account");
-    }
-
     console.log("Fetching property details for token:", tokenId);
     
     // Get property details from contract
@@ -77,7 +63,7 @@ const buyProperty = async (tokenId) => {
     const receipt = await contract.methods.buyProperty(tokenId).send({
       from: auth.user.wallet,
       value: property.price,
-      gas: 500000,
+      // gas: 500000,
     });
 
     console.log("Transaction successful:", receipt);
@@ -133,26 +119,13 @@ useEffect(() => {
       console.log("Initializing Web3...");
       
       // Create Web3 instance
-      const web3Instance = new Web3(window.ethereum);
-      
-      // Request account access
-      const accounts = await window.ethereum.request({ 
-        method: "eth_requestAccounts" 
-      });
-      
-      console.log("Connected accounts:", accounts);
-      
-      // Get network info
-      const chainId = await web3Instance.eth.getChainId();
-      console.log("Connected to chain ID:", chainId);
+      const web3Instance = new Web3('http://127.0.0.1:7545');
       
       // Initialize contract
       const contractInstance = new web3Instance.eth.Contract(
         CONTRACT_ABI,
         CONTRACT_ADDRESS
       );
-      
-      console.log("Contract initialized at:", CONTRACT_ADDRESS);
       
       setWeb3(web3Instance);
       setContract(contractInstance);

@@ -22,8 +22,8 @@ const SellerDetails = () => {
   useEffect(() => {
      const initWeb3 = async () => {
       try {
-        const web3Instance = new Web3(window.ethereum || 'http://127.0.0.1:7545');
-        await window.ethereum?.request({ method: 'eth_requestAccounts' });
+        const web3Instance = new Web3('http://127.0.0.1:7545');
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
         const contractInstance = new web3Instance.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
         setWeb3(web3Instance);
         setContract(contractInstance);
