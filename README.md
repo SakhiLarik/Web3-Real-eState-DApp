@@ -123,16 +123,6 @@ Web3 Real Estate DApp is designed to enable property buyers, sellers, and agents
 - **Blockchain:** Ethereum (local, testnet, mainnet)
 - **Storage:** IPFS (for files), Ethereum blockchain (for core data)
 
----
-
-## Screenshots
-
-<!-- Add screenshots/gifs of your UI and workflow here -->
-![DApp Home](screenshots/home.png)
-![Property Listing](screenshots/properties.png)
-![Transaction Flow](screenshots/transaction.png)
-
----
 
 ## Contributing
 
